@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rabiozas — Panel de Administración</title>
+<meta name="robots" content="noindex, nofollow"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pm:#7C3AED; --pl:#DDD6FE; --pll:#F5F3FF; --p:#6B21A8;
+  --g:#166534; --gm:#16A34A; --gl:#DCFCE7;
+  --r:#C1FF00; --bk:#1a1a1a; --lgt:#f8f8f0; --gray:#6b7280;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);min-height:100vh}
+
+/* ---- LOGIN ---- */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--pm) 0%,var(--p) 100%)}
+.login-box{background:#fff;border-radius:20px;padding:40px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-box h1{font-size:24px;font-weight:900;color:var(--pm);margin-bottom:6px;text-align:center}
+.login-box p{color:var(--gray);font-size:13px;text-align:center;margin-bottom:24px}
+.login-box input{width:100%;padding:13px 16px;border:1.5px solid var(--pl);border-radius:10px;font-size:14px;margin-bottom:14px;font-family:inherit}
+.login-box input:focus{outline:none;border-color:var(--pm)}
+.login-box button{width:100%;background:var(--pm);color:#fff;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+.login-box button:hover{background:var(--p)}
+.login-error{color:#dc2626;font-size:12px;text-align:center;margin-top:10px;min-height:16px}
+
+/* ---- APP ---- */
+.app{display:none}
+.app.show{display:block}
+.topbar{background:#fff;border-bottom:3px solid var(--pm);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h1{font-size:18px;font-weight:900;color:var(--pm)}
+.topbar .who{font-size:13px;color:var(--gray)}
+.logout-btn{background:transparent;border:1.5px solid var(--pm);color:var(--pm);border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+
+.wrap{max-width:780px;margin:0 auto;padding:28px 20px 80px}
+
+.panel-tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid var(--pl)}
+.panel-tab{padding:10px 18px;font-weight:700;font-size:13px;color:var(--gray);cursor:pointer;border-bottom:3px solid transparent}
+.panel-tab.active{color:var(--pm);border-bottom-color:var(--pm)}
+
+.card{background:#fff;border-radius:16px;padding:26px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:20px}
+.card h2{font-size:18px;font-weight:800;margin-bottom:16px;color:var(--p)}
+
+label{display:block;font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:16px}
+label:first-child{margin-top:0}
+input[type=text], input[type=url], select, textarea{
+  width:100%;padding:11px 14px;border:1.5px solid var(--pl);border-radius:10px;
+  font-size:14px;font-family:inherit;background:var(--pll);
+}
+textarea{resize:vertical;min-height:90px}
+textarea.body-editor{min-height:200px}
+input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);background:#fff}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.row2{grid-template-columns:1fr}}
+
+.img-zone{border:2px dashed var(--pl);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s;margin-top:8px}
+.img-zone:hover{border-color:var(--pm)}
+.img-zone.has-img{border-style:solid;padding:0;overflow:hidden}
+.img-zone img{width:100%;max-height:220px;object-fit:cover;display:block}
+.img-zone .placeholder{color:var(--gray);font-size:13px}
+.img-zone .placeholder span{font-size:28px;display:block;margin-bottom:6px}
+#imgFileInput{display:none}
+
+.checkbox-row{display:flex;align-items:center;gap:8px;margin-top:16px}
+.checkbox-row input{width:auto}
+.checkbox-row label{margin:0;text-transform:none;font-size:13px;font-weight:600;color:var(--bk)}
+
+.btn-row{display:flex;gap:10px;margin-top:24px}
+.btn-publish{flex:1;background:var(--pm);color:#fff;border:none;border-radius:24px;padding:14px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+.btn-publish:hover{background:var(--p)}
+.btn-publish:disabled{opacity:.5;cursor:not-allowed}
+.btn-clear{background:transparent;border:1.5px solid var(--gray);color:var(--gray);border-radius:24px;padding:14px 20px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
+
+.status-msg{margin-top:14px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;display:none}
+.status-msg.ok{display:block;background:var(--gl);color:var(--g)}
+.status-msg.err{display:block;background:#fee2e2;color:#dc2626}
+.status-msg.loading{display:block;background:var(--pll);color:var(--pm)}
+
+/* ---- LISTA ---- */
+.news-item{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.news-item img{width:70px;height:55px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--pll)}
+.news-item .info{flex:1;min-width:0}
+.news-item .cat{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--pm);text-transform:uppercase}
+.news-item .ttl{font-size:14px;font-weight:700;margin:4px 0;line-height:1.3}
+.news-item .meta{font-size:11px;color:var(--gray)}
+.news-item .actions{display:flex;gap:6px;flex-shrink:0}
+.news-item .actions button{border:none;background:var(--pll);color:var(--pm);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:14px}
+.news-item .actions button.del{background:#fee2e2;color:#dc2626}
+.empty-state{text-align:center;padding:50px 20px;color:var(--gray)}
+.empty-state span{font-size:36px;display:block;margin-bottom:10px}
+.refresh-btn{background:var(--pll);border:1px solid var(--pl);color:var(--pm);border-radius:20px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h1>🎙️ RABIOZAS</h1>
+    <p>Panel de administración de noticias</p>
+    <input type="text" id="loginUser" placeholder="Usuario" autocomplete="off"/>
+    <input type="text" id="loginPass" placeholder="Contraseña" autocomplete="off"/>
+    <button onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div class="app" id="appScreen">
+  <div class="topbar">
+    <h1>🎙️ RABIOZAS — Admin</h1>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span class="who" id="whoLabel"></span>
+      <button class="logout-btn" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="panel-tabs">
+      <div class="panel-tab active" id="tabNew" onclick="switchTab('new')">+ Nueva noticia</div>
+      <div class="panel-tab" id="tabList" onclick="switchTab('list')">Noticias publicadas</div>
+    </div>
+
+    <!-- ==== FORM NUEVA NOTICIA ==== -->
+    <div id="viewNew">
+      <div class="card">
+        <h2 id="formTitle">Publicar noticia</h2>
+
+        <label>Categoría</label>
+        <select id="fCategoria">
+          <option value="genero">Género</option>
+          <option value="ambiente">Ambiente</option>
+          <option value="politica">Política</option>
+          <option value="ddhh">Derechos Humanos</option>
+          <option value="investigacion">Investigación</option>
+        </select>
+
+        <label>Título</label>
+        <input type="text" id="fTitulo" placeholder="Título de la noticia"/>
+
+        <label>Resumen (aparece en la tarjeta)</label>
+        <textarea id="fResumen" placeholder="Resumen corto, 1-2 oraciones..."></textarea>
+
+        <label>Cuerpo completo (se ve al abrir la noticia)</label>
+        <textarea class="body-editor" id="fCuerpo" placeholder="Escribe el artículo completo aquí. Puedes usar líneas en blanco para separar párrafos."></textarea>
+
+        <div class="row2">
+          <div>
+            <label>Autor</label>
+            <input type="text" id="fAutor" placeholder="Nombre de la periodista" value="Equipo Rabiozas"/>
+          </div>
+          <div>
+            <label>Fuente</label>
+            <input type="text" id="fFuente" placeholder="Rabiozas" value="Rabiozas"/>
+          </div>
+        </div>
+
+        <label>Imagen de la noticia</label>
+        <div class="img-zone" id="imgZone" onclick="document.getElementById('imgFileInput').click()">
+          <div class="placeholder" id="imgPlaceholder">
+            <span>📷</span>
+            Clic para subir una foto desde tu computador o celular<br/>
+            <small>(o pega abajo el link de una imagen)</small>
+          </div>
+          <img id="imgPreview" style="display:none"/>
+        </div>
+        <input type="file" id="imgFileInput" accept="image/*" onchange="handleImgUpload(event)"/>
+        <input type="url" id="fImagenUrl" placeholder="https://... (opcional, si no subes foto)" style="margin-top:8px"/>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="fDestacado"/>
+          <label for="fDestacado">Destacar esta noticia (aparece como Hero en Inicio)</label>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-publish" id="btnPublish" onclick="publishNews()">Publicar noticia</button>
+          <button class="btn-clear" onclick="clearForm()">Limpiar</button>
+        </div>
+        <div class="status-msg" id="statusMsg"></div>
+      </div>
+    </div>
+
+    <!-- ==== LISTA ==== -->
+    <div id="viewList" style="display:none">
+      <button class="refresh-btn" onclick="loadNewsList()">↻ Actualizar lista</button>
+      <div id="newsListContainer"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============== CONFIG ============== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbx5z1PBFmzYHhm5rMlORepI8Mhm1h9njaF9zjrv1cfib1R9L-jtGWBGfS8xftar0-6C/exec';
+
+/* Usuarios simples del equipo — edita aquí para agregar/quitar gente */
+const USERS = {
+  'rabioza1': 'rabiozas2026',
+  'rabioza2': 'rabiozas2026'
+};
+
+let editingId = null;
+let uploadedImageBase64 = null;
+
+/* ============== LOGIN ============== */
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim().toLowerCase();
+  const p = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+
+  if (USERS[u] && USERS[u] === p) {
+    sessionStorage.setItem('rabiozas_admin_user', u);
+    showApp(u);
+  } else {
+    err.textContent = 'Usuario o contraseña incorrectos';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('rabiozas_admin_user');
+  document.getElementById('appScreen').classList.remove('show');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+function showApp(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').classList.add('show');
+  document.getElementById('whoLabel').textContent = 'Conectada como ' + user;
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  const saved = sessionStorage.getItem('rabiozas_admin_user');
+  if (saved && USERS[saved]) showApp(saved);
+
+  document.getElementById('loginPass').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+});
+
+/* ============== TABS ============== */
+function switchTab(tab) {
+  document.getElementById('tabNew').classList.toggle('active', tab === 'new');
+  document.getElementById('tabList').classList.toggle('active', tab === 'list');
+  document.getElementById('viewNew').style.display = tab === 'new' ? 'block' : 'none';
+  document.getElementById('viewList').style.display = tab === 'list' ? 'block' : 'none';
+  if (tab === 'list') loadNewsList();
+}
+
+/* ============== IMAGEN ============== */
+function handleImgUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    uploadedImageBase64 = ev.target.result;
+    document.getElementById('imgPreview').src = uploadedImageBase64;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.getElementById('imgPlaceholder').style.display = 'none';
+    document.getElementById('imgZone').classList.add('has-img');
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ============== PUBLICAR ============== */
+function clearForm() {
+  document.getElementById('fTitulo').value = '';
+  document.getElementById('fResumen').value = '';
+  document.getElementById('fCuerpo').value = '';
+  document.getElementById('fAutor').value = 'Equipo Rabiozas';
+  document.getElementById('fFuente').value = 'Rabiozas';
+  document.getElementById('fImagenUrl').value = '';
+  document.getElementById('fDestacado').checked = false;
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('imgPlaceholder').style.display = 'block';
+  document.getElementById('imgZone').classList.remove('has-img');
+  uploadedImageBase64 = null;
+  editingId = null;
+  document.getElementById('formTitle').textContent = 'Publicar noticia';
+  document.getElementById('btnPublish').textContent = 'Publicar noticia';
+  hideStatus();
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status-msg ' + type;
+}
+function hideStatus() {
+  document.getElementById('statusMsg').className = 'status-msg';
+}
+
+function publishNews() {
+  const titulo = document.getElementById('fTitulo').value.trim();
+  const resumen = document.getElementById('fResumen').value.trim();
+
+  if (!titulo) { showStatus('⚠ El título es obligatorio', 'err'); return; }
+  if (!resumen) { showStatus('⚠ El resumen es obligatorio', 'err'); return; }
+
+  const cuerpoRaw = document.getElementById('fCuerpo').value.trim();
+  const cuerpoHtml = cuerpoRaw
+    .split(/\n\s*\n/)
+    .map(function(p) { return p.trim() ? '<p>' + p.trim().replace(/\n/g, '<br>') + '</p>' : ''; })
+    .join('');
+
+  const imagenUrl = uploadedImageBase64 || document.getElementById('fImagenUrl').value.trim();
+
+  const payload = {
+    action: editingId ? 'update' : 'create',
+    id: editingId || undefined,
+    categoria: document.getElementById('fCategoria').value,
+    titulo: titulo,
+    resumen: resumen,
+    cuerpo: cuerpoHtml,
+    autor: document.getElementById('fAutor').value.trim() || 'Equipo Rabiozas',
+    fuente: document.getElementById('fFuente').value.trim() || 'Rabiozas',
+    imagenUrl: imagenUrl,
+    destacado: document.getElementById('fDestacado').checked
+  };
+
+  document.getElementById('btnPublish').disabled = true;
+  showStatus('⏳ Publicando... (puede tardar unos segundos)', 'loading');
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('Servidor respondió con código ' + r.status);
+    return r.text();
+  })
+  .then(function(text) {
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      throw new Error('Respuesta inesperada del servidor: ' + text.substring(0, 200));
+    }
+    document.getElementById('btnPublish').disabled = false;
+    if (data.ok) {
+      showStatus('✓ Noticia publicada correctamente (ID: ' + data.id + '). Aparecerá en el sitio en unos segundos.', 'ok');
+      setTimeout(clearForm, 3500);
+    } else {
+      showStatus('✗ Error del servidor: ' + (data.error || 'desconocido'), 'err');
+    }
+  })
+  .catch(function(err) {
+    document.getElementById('btnPublish').disabled = false;
+    showStatus('✗ Error de conexión: ' + err.message + ' — Revisa tu internet o intenta de nuevo.', 'err');
+    console.error('Error al publicar:', err);
+  });
+}
+
+/* ============== LISTA / EDITAR / BORRAR ============== */
+const CAT_LABELS = {
+  genero: 'Género', ambiente: 'Ambiente', politica: 'Política',
+  ddhh: 'Derechos Humanos', investigacion: 'Investigación'
+};
+
+function loadNewsList() {
+  const container = document.getElementById('newsListContainer');
+  container.innerHTML = '<div class="empty-state"><span>⏳</span>Cargando...</div>';
+
+  fetch(API_URL)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.ok || !data.noticias || data.noticias.length === 0) {
+        container.innerHTML = '<div class="empty-state"><span>📭</span>Aún no hay noticias publicadas.</div>';
+        return;
+      }
+      const items = data.noticias.slice().reverse();
+      container.innerHTML = '';
+      items.forEach(function(n) {
+        const div = document.createElement('div');
+        div.className = 'news-item';
+
+        const img = document.createElement('img');
+        img.src = n.ImagenURL || '';
+        img.onerror = function() { this.style.display = 'none'; };
+        if (!n.ImagenURL) img.style.display = 'none';
+
+        const info = document.createElement('div');
+        info.className = 'info';
+        const cat = document.createElement('div');
+        cat.className = 'cat';
+        cat.textContent = CAT_LABELS[n.Categoria] || n.Categoria;
+        const ttl = document.createElement('div');
+        ttl.className = 'ttl';
+        ttl.textContent = n.Titulo;
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = (n.Autor || '') + ' · ' + fmtDate(n.Fecha);
+        info.appendChild(cat);
+        info.appendChild(ttl);
+        info.appendChild(meta);
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        const editBtn = document.createElement('button');
+        editBtn.textContent = '✎';
+        editBtn.title = 'Editar';
+        editBtn.onclick = function() { editNews(n); };
+        const delBtn = document.createElement('button');
+        delBtn.className = 'del';
+        delBtn.textContent = '✕';
+        delBtn.title = 'Borrar';
+        delBtn.onclick = function() { deleteNews(n.ID, n.Titulo); };
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+
+        div.appendChild(img);
+        div.appendChild(info);
+        div.appendChild(actions);
+        container.appendChild(div);
+      });
+    })
+    .catch(function(err) {
+      container.innerHTML = '<div class="empty-state"><span>⚠</span>Error cargando noticias: ' + err.message + '</div>';
+    });
+}
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'}); }
+  catch(e) { return iso; }
+}
+
+function editNews(n) {
+  editingId = n.ID;
+  document.getElementById('fCategoria').value = n.Categoria || 'genero';
+  document.getElementById('fTitulo').value = n.Titulo || '';
+  document.getElementById('fResumen').value = n.Resumen || '';
+  const cuerpoText = (n.Cuerpo || '').replace(/<\/p>\s*<p>/g, '\n\n').replace(/<\/?p>/g, '').replace(/<br\s*\/?>/g, '\n');
+  document.getElementById('fCuerpo').value = cuerpoText;
+  document.getElementById('fAutor').value = n.Autor || 'Equipo Rabiozas';
+  document.getElementById('fFuente').value = n.Fuente || 'Rabiozas';
+  document.getElementById('fImagenUrl').value = (n.ImagenURL && !n.ImagenURL.startsWith('data:')) ? n.ImagenURL : '';
+  document.getElementById('fDestacado').checked = (n.Destacado === 'SI');
+
+  if (n.ImagenURL) {
+    document.getElementById('imgPreview').src = n.ImagenURL;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.getElementById('imgPlaceholder').style.display = 'none';
+    document.getElementById('imgZone').classList.add('has-img');
+  }
+
+  document.getElementById('formTitle').textContent = 'Editar noticia';
+  document.getElementById('btnPublish').textContent = 'Guardar cambios';
+  switchTab('new');
+  window.scrollTo(0, 0);
+}
+
+function deleteNews(id, titulo) {
+  if (!confirm('¿Borrar la noticia "' + titulo + '"? Esta acción no se puede deshacer.')) return;
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'delete', id: id })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.ok) loadNewsList();
+    else alert('Error al borrar: ' + (data.error || 'desconocido'));
+  })
+  .catch(function(err) { alert('Error de conexión: ' + err.message); });
+}
+</script>
+</body>
+</html>
