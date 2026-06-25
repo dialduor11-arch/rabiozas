@@ -123,6 +123,7 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
       <div class="panel-tab active" id="tabNew" onclick="switchTab('new')">+ Nueva noticia</div>
       <div class="panel-tab" id="tabList" onclick="switchTab('list')">Noticias publicadas</div>
       <div class="panel-tab" id="tabInicio" onclick="switchTab('inicio')">Editar Inicio</div>
+      <div class="panel-tab" id="tabConfig" onclick="switchTab('config')">Configuración del sitio</div>
     </div>
 
     <!-- ==== FORM NUEVA NOTICIA ==== -->
@@ -138,6 +139,7 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
           <option value="ddhh">Derechos Humanos</option>
           <option value="investigacion">Investigación</option>
           <option value="podcast">Podcast</option>
+          <option value="opinion">Opinión</option>
         </select>
 
         <label>Título</label>
@@ -171,6 +173,11 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
         </div>
         <input type="file" id="imgFileInput" accept="image/*" onchange="handleImgUpload(event)"/>
         <input type="url" id="fImagenUrl" placeholder="https://... (opcional, si no subes foto)" style="margin-top:8px"/>
+
+        <div id="opinionRoleField" style="display:none">
+          <label>Cargo / rol de la columnista</label>
+          <input type="text" id="fOpinionRole" placeholder="Ej: Abogada feminista, Sisma Mujer"/>
+        </div>
 
         <div id="audioField" style="display:none">
           <label>Archivo de audio del episodio</label>
@@ -224,6 +231,52 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
         </p>
         <button class="refresh-btn" onclick="loadSidebarPreview()">↻ Ver vista previa actual</button>
         <div id="sidebarPreviewContainer" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <!-- ==== CONFIGURACIÓN DEL SITIO ==== -->
+    <div id="viewConfig" style="display:none">
+      <div class="card">
+        <h2>🏷️ Encabezados de categorías</h2>
+        <p style="font-size:12px;color:var(--gray);margin-top:-10px;margin-bottom:16px">
+          El emoji, título y descripción que aparecen arriba de cada sección (Género, Ambiente, Política, DDHH, Opinión).
+        </p>
+        <div id="categoryHeadersContainer"></div>
+        <div class="btn-row">
+          <button class="btn-publish" onclick="saveCategoryHeaders()">Guardar encabezados</button>
+        </div>
+        <div class="status-msg" id="configHeadersStatus"></div>
+      </div>
+
+      <div class="card">
+        <h2>🔗 Redes sociales</h2>
+        <p style="font-size:12px;color:var(--gray);margin-top:-10px;margin-bottom:16px">
+          Links que aparecen en "Conecta" al final del sitio. Deja en blanco la red que no uses.
+        </p>
+        <label>Instagram</label>
+        <input type="url" id="cfgInstagram" placeholder="https://instagram.com/..."/>
+        <label>Twitter / X</label>
+        <input type="url" id="cfgTwitter" placeholder="https://x.com/..."/>
+        <label>TikTok</label>
+        <input type="url" id="cfgTiktok" placeholder="https://tiktok.com/@..."/>
+        <label>Telegram</label>
+        <input type="url" id="cfgTelegram" placeholder="https://t.me/..."/>
+        <div class="btn-row">
+          <button class="btn-publish" onclick="saveSocialLinks()">Guardar redes sociales</button>
+        </div>
+        <div class="status-msg" id="configSocialStatus"></div>
+      </div>
+
+      <div class="card">
+        <h2>📄 El Medio</h2>
+        <p style="font-size:12px;color:var(--gray);margin-top:-10px;margin-bottom:16px">
+          Los 5 links del pie de página: nombre visible y la URL a la que llevan.
+        </p>
+        <div id="elMedioContainer"></div>
+        <div class="btn-row">
+          <button class="btn-publish" onclick="saveElMedio()">Guardar El Medio</button>
+        </div>
+        <div class="status-msg" id="configMedioStatus"></div>
       </div>
     </div>
   </div>
@@ -284,17 +337,21 @@ function switchTab(tab) {
   document.getElementById('tabNew').classList.toggle('active', tab === 'new');
   document.getElementById('tabList').classList.toggle('active', tab === 'list');
   document.getElementById('tabInicio').classList.toggle('active', tab === 'inicio');
+  document.getElementById('tabConfig').classList.toggle('active', tab === 'config');
   document.getElementById('viewNew').style.display = tab === 'new' ? 'block' : 'none';
   document.getElementById('viewList').style.display = tab === 'list' ? 'block' : 'none';
   document.getElementById('viewInicio').style.display = tab === 'inicio' ? 'block' : 'none';
+  document.getElementById('viewConfig').style.display = tab === 'config' ? 'block' : 'none';
   if (tab === 'list') loadNewsList();
   if (tab === 'inicio') { loadHeroOptions(); loadSidebarPreview(); }
+  if (tab === 'config') { loadCategoryHeaders(); loadSocialLinks(); loadElMedio(); }
 }
 
 /* ============== CATEGORÍA DINÁMICA (mostrar campo de audio si es Podcast) ============== */
 function toggleCategoryFields() {
   const cat = document.getElementById('fCategoria').value;
   document.getElementById('audioField').style.display = (cat === 'podcast') ? 'block' : 'none';
+  document.getElementById('opinionRoleField').style.display = (cat === 'opinion') ? 'block' : 'none';
 }
 
 /* ============== AUDIO (PODCAST) ============== */
@@ -420,6 +477,7 @@ function publishNews() {
 
   const imagenUrl = uploadedImageBase64 || document.getElementById('fImagenUrl').value.trim();
   const audioUrl = uploadedAudioBase64 || document.getElementById('fAudioUrl').value.trim();
+  const opinionRole = document.getElementById('fOpinionRole').value.trim();
 
   const payload = {
     action: editingId ? 'update' : 'create',
@@ -429,7 +487,7 @@ function publishNews() {
     resumen: resumen,
     cuerpo: cuerpoHtml,
     autor: document.getElementById('fAutor').value.trim() || 'Equipo Rabiozas',
-    fuente: document.getElementById('fFuente').value.trim() || 'Rabiozas',
+    fuente: opinionRole || document.getElementById('fFuente').value.trim() || 'Rabiozas',
     imagenUrl: imagenUrl,
     audioUrl: audioUrl,
     destacado: document.getElementById('fDestacado').checked
@@ -472,7 +530,8 @@ function publishNews() {
 /* ============== LISTA / EDITAR / BORRAR ============== */
 const CAT_LABELS = {
   genero: 'Género', ambiente: 'Ambiente', politica: 'Política',
-  ddhh: 'Derechos Humanos', investigacion: 'Investigación', podcast: 'Podcast'
+  ddhh: 'Derechos Humanos', investigacion: 'Investigación', podcast: 'Podcast',
+  opinion: 'Opinión'
 };
 
 /* ============== EDITAR INICIO: HERO + SIDEBAR ============== */
@@ -585,6 +644,184 @@ function loadSidebarPreview() {
     .catch(function(err) {
       container.innerHTML = '<div class="empty-state"><span>⚠</span>Error: ' + err.message + '</div>';
     });
+}
+
+/* ============== CONFIGURACIÓN DEL SITIO ============== */
+
+const CATEGORY_DEFS = [
+  { key: 'genero',        label: 'Género',           emojiDefault: '✊',  titleDefault: 'Feminismo',                       descDefault: 'Cubrimos los movimientos, luchas y victorias del feminismo latinoamericano con rigor y perspectiva de género.' },
+  { key: 'ambiente',      label: 'Ambiente',         emojiDefault: '🌿',  titleDefault: 'Medio Ambiente',                  descDefault: 'La crisis ecológica vista desde quienes más la sufren: mujeres, comunidades indígenas y territorios en resistencia.' },
+  { key: 'politica',      label: 'Política',        emojiDefault: '🏛️', titleDefault: 'Política',                        descDefault: 'Seguimos la política desde una perspectiva feminista: poder, representación y democracia con equidad.' },
+  { key: 'ddhh',          label: 'Derechos Humanos', emojiDefault: '⚖️', titleDefault: 'Derechos Humanos',                descDefault: 'Denunciamos las violaciones a los derechos humanos con énfasis en mujeres, niñas y comunidades en riesgo.' },
+  { key: 'opinion',       label: 'Opinión',          emojiDefault: '✍️', titleDefault: 'Opinión',                         descDefault: 'Voces diversas que analizan, cuestionan y proponen desde el feminismo y los derechos humanos.' },
+  { key: 'investigacion', label: 'Investigación',    emojiDefault: '🔍', titleDefault: 'Periodismo de Investigación',     descDefault: 'Investigaciones de largo aliento que exponen estructuras de poder, violencia y desigualdad.' }
+];
+
+let _siteConfig = {};
+
+function fetchConfig() {
+  return fetch(API_URL).then(function(r) { return r.json(); }).then(function(data) {
+    if (!data.ok) throw new Error(data.error || 'Error desconocido');
+    _siteConfig = data.config || {};
+    return _siteConfig;
+  });
+}
+
+function loadCategoryHeaders() {
+  const container = document.getElementById('categoryHeadersContainer');
+  container.innerHTML = '<div class="empty-state"><span>⏳</span>Cargando...</div>';
+
+  fetchConfig().then(function(cfg) {
+    container.innerHTML = '';
+    CATEGORY_DEFS.forEach(function(c) {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'border:1px solid var(--pl);border-radius:10px;padding:14px;margin-bottom:12px';
+
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:10px;margin-bottom:8px';
+
+      const emojiInput = document.createElement('input');
+      emojiInput.type = 'text';
+      emojiInput.id = 'cat_emoji_' + c.key;
+      emojiInput.value = cfg['cat_emoji_' + c.key] || c.emojiDefault;
+      emojiInput.style.cssText = 'width:60px;text-align:center;font-size:18px';
+
+      const titleInput = document.createElement('input');
+      titleInput.type = 'text';
+      titleInput.id = 'cat_title_' + c.key;
+      titleInput.value = cfg['cat_title_' + c.key] || c.titleDefault;
+      titleInput.placeholder = 'Título de la sección ' + c.label;
+
+      row.appendChild(emojiInput);
+      row.appendChild(titleInput);
+
+      const descInput = document.createElement('textarea');
+      descInput.id = 'cat_desc_' + c.key;
+      descInput.value = cfg['cat_desc_' + c.key] || c.descDefault;
+      descInput.style.minHeight = '50px';
+      descInput.placeholder = 'Descripción que aparece bajo el título';
+
+      const label = document.createElement('label');
+      label.textContent = c.label;
+      label.style.marginTop = '0';
+
+      wrap.appendChild(label);
+      wrap.appendChild(row);
+      wrap.appendChild(descInput);
+      container.appendChild(wrap);
+    });
+  }).catch(function(err) {
+    container.innerHTML = '<div class="empty-state"><span>⚠</span>Error: ' + err.message + '</div>';
+  });
+}
+
+function saveCategoryHeaders() {
+  const config = {};
+  CATEGORY_DEFS.forEach(function(c) {
+    config['cat_emoji_' + c.key] = document.getElementById('cat_emoji_' + c.key).value.trim();
+    config['cat_title_' + c.key] = document.getElementById('cat_title_' + c.key).value.trim();
+    config['cat_desc_' + c.key] = document.getElementById('cat_desc_' + c.key).value.trim();
+  });
+  saveConfigToServer(config, 'configHeadersStatus');
+}
+
+function loadSocialLinks() {
+  fetchConfig().then(function(cfg) {
+    document.getElementById('cfgInstagram').value = cfg.social_instagram || '';
+    document.getElementById('cfgTwitter').value = cfg.social_twitter || '';
+    document.getElementById('cfgTiktok').value = cfg.social_tiktok || '';
+    document.getElementById('cfgTelegram').value = cfg.social_telegram || '';
+  }).catch(function(err) {
+    console.error('Error cargando redes sociales:', err);
+  });
+}
+
+function saveSocialLinks() {
+  const config = {
+    social_instagram: document.getElementById('cfgInstagram').value.trim(),
+    social_twitter: document.getElementById('cfgTwitter').value.trim(),
+    social_tiktok: document.getElementById('cfgTiktok').value.trim(),
+    social_telegram: document.getElementById('cfgTelegram').value.trim()
+  };
+  saveConfigToServer(config, 'configSocialStatus');
+}
+
+const EL_MEDIO_DEFAULTS = [
+  { nombre: '¿Quiénes somos?', url: '' },
+  { nombre: 'Nuestro equipo', url: '' },
+  { nombre: 'Transparencia', url: '' },
+  { nombre: 'Código ético', url: '' },
+  { nombre: 'Financiación', url: '' }
+];
+
+function loadElMedio() {
+  const container = document.getElementById('elMedioContainer');
+  container.innerHTML = '<div class="empty-state"><span>⏳</span>Cargando...</div>';
+
+  fetchConfig().then(function(cfg) {
+    container.innerHTML = '';
+    EL_MEDIO_DEFAULTS.forEach(function(item, idx) {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;gap:10px;margin-bottom:10px';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.id = 'medio_nombre_' + idx;
+      nameInput.value = cfg['medio_nombre_' + idx] || item.nombre;
+      nameInput.placeholder = 'Nombre visible';
+      nameInput.style.flex = '1';
+
+      const urlInput = document.createElement('input');
+      urlInput.type = 'url';
+      urlInput.id = 'medio_url_' + idx;
+      urlInput.value = cfg['medio_url_' + idx] || item.url;
+      urlInput.placeholder = 'https://...';
+      urlInput.style.flex = '2';
+
+      wrap.appendChild(nameInput);
+      wrap.appendChild(urlInput);
+      container.appendChild(wrap);
+    });
+  }).catch(function(err) {
+    container.innerHTML = '<div class="empty-state"><span>⚠</span>Error: ' + err.message + '</div>';
+  });
+}
+
+function saveElMedio() {
+  const config = {};
+  EL_MEDIO_DEFAULTS.forEach(function(item, idx) {
+    config['medio_nombre_' + idx] = document.getElementById('medio_nombre_' + idx).value.trim();
+    config['medio_url_' + idx] = document.getElementById('medio_url_' + idx).value.trim();
+  });
+  saveConfigToServer(config, 'configMedioStatus');
+}
+
+function saveConfigToServer(config, statusElId) {
+  const statusEl = document.getElementById(statusElId);
+  statusEl.className = 'status-msg loading';
+  statusEl.textContent = '⏳ Guardando...';
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'saveConfig', config: config })
+  })
+  .then(function(r) { return r.text(); })
+  .then(function(text) {
+    let data;
+    try { data = JSON.parse(text); } catch (e) { throw new Error('Respuesta inesperada: ' + text.substring(0, 150)); }
+    if (data.ok) {
+      statusEl.className = 'status-msg ok';
+      statusEl.textContent = '✓ Guardado correctamente. Aparecerá en el sitio en unos segundos.';
+    } else {
+      statusEl.className = 'status-msg err';
+      statusEl.textContent = '✗ Error: ' + (data.error || 'desconocido');
+    }
+  })
+  .catch(function(err) {
+    statusEl.className = 'status-msg err';
+    statusEl.textContent = '✗ Error de conexión: ' + err.message;
+  });
 }
 
 function loadNewsList() {
