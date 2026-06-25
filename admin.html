@@ -270,13 +270,28 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
       <div class="card">
         <h2>📄 El Medio</h2>
         <p style="font-size:12px;color:var(--gray);margin-top:-10px;margin-bottom:16px">
-          Los 5 links del pie de página: nombre visible y la URL a la que llevan.
+          Redacta el título, el contenido completo y agrega una imagen para cada apartado. Al hacer clic en el sitio, se abrirá como una página completa (igual que las noticias).
         </p>
         <div id="elMedioContainer"></div>
         <div class="btn-row">
           <button class="btn-publish" onclick="saveElMedio()">Guardar El Medio</button>
         </div>
         <div class="status-msg" id="configMedioStatus"></div>
+      </div>
+
+      <div class="card">
+        <h2>🎙️ Pop-up de bienvenida (Podcast)</h2>
+        <p style="font-size:12px;color:var(--gray);margin-top:-10px;margin-bottom:16px">
+          El texto que aparece en la ventana emergente al entrar al sitio.
+        </p>
+        <label>Título</label>
+        <input type="text" id="cfgPopupTitle" placeholder="Podcast RABIOZAS"/>
+        <label>Descripción / episodio</label>
+        <textarea id="cfgPopupSub" placeholder='Ep. 47 — "Nombre del episodio"'></textarea>
+        <div class="btn-row">
+          <button class="btn-publish" onclick="savePopupConfig()">Guardar pop-up</button>
+        </div>
+        <div class="status-msg" id="configPopupStatus"></div>
       </div>
     </div>
   </div>
@@ -344,7 +359,7 @@ function switchTab(tab) {
   document.getElementById('viewConfig').style.display = tab === 'config' ? 'block' : 'none';
   if (tab === 'list') loadNewsList();
   if (tab === 'inicio') { loadHeroOptions(); loadSidebarPreview(); }
-  if (tab === 'config') { loadCategoryHeaders(); loadSocialLinks(); loadElMedio(); }
+  if (tab === 'config') { loadCategoryHeaders(); loadSocialLinks(); loadElMedio(); loadPopupConfig(); }
 }
 
 /* ============== CATEGORÍA DINÁMICA (mostrar campo de audio si es Podcast) ============== */
@@ -747,12 +762,14 @@ function saveSocialLinks() {
 }
 
 const EL_MEDIO_DEFAULTS = [
-  { nombre: '¿Quiénes somos?', url: '' },
-  { nombre: 'Nuestro equipo', url: '' },
-  { nombre: 'Transparencia', url: '' },
-  { nombre: 'Código ético', url: '' },
-  { nombre: 'Financiación', url: '' }
+  { titulo: '¿Quiénes somos?' },
+  { titulo: 'Nuestro equipo' },
+  { titulo: 'Transparencia' },
+  { titulo: 'Código ético' },
+  { titulo: 'Financiación' }
 ];
+
+let elMedioImages = {};
 
 function loadElMedio() {
   const container = document.getElementById('elMedioContainer');
@@ -762,24 +779,69 @@ function loadElMedio() {
     container.innerHTML = '';
     EL_MEDIO_DEFAULTS.forEach(function(item, idx) {
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'display:flex;gap:10px;margin-bottom:10px';
+      wrap.style.cssText = 'border:1px solid var(--pl);border-radius:10px;padding:14px;margin-bottom:14px';
 
-      const nameInput = document.createElement('input');
-      nameInput.type = 'text';
-      nameInput.id = 'medio_nombre_' + idx;
-      nameInput.value = cfg['medio_nombre_' + idx] || item.nombre;
-      nameInput.placeholder = 'Nombre visible';
-      nameInput.style.flex = '1';
+      const titleInput = document.createElement('input');
+      titleInput.type = 'text';
+      titleInput.id = 'medio_titulo_' + idx;
+      titleInput.value = cfg['medio_titulo_' + idx] || item.titulo;
+      titleInput.placeholder = 'Título del apartado';
+      titleInput.style.marginBottom = '10px';
 
-      const urlInput = document.createElement('input');
-      urlInput.type = 'url';
-      urlInput.id = 'medio_url_' + idx;
-      urlInput.value = cfg['medio_url_' + idx] || item.url;
-      urlInput.placeholder = 'https://...';
-      urlInput.style.flex = '2';
+      const bodyTextarea = document.createElement('textarea');
+      bodyTextarea.id = 'medio_contenido_' + idx;
+      bodyTextarea.value = cfg['medio_contenido_' + idx] || '';
+      bodyTextarea.placeholder = 'Escribe el contenido completo aquí (separa párrafos con una línea en blanco)';
+      bodyTextarea.style.minHeight = '100px';
 
-      wrap.appendChild(nameInput);
-      wrap.appendChild(urlInput);
+      const imgZone = document.createElement('div');
+      imgZone.className = 'img-zone';
+      imgZone.id = 'medioImgZone_' + idx;
+      imgZone.style.padding = '14px';
+      imgZone.style.marginTop = '10px';
+      imgZone.onclick = function() { document.getElementById('medioImgInput_' + idx).click(); };
+
+      const existingImg = cfg['medio_imagen_' + idx];
+      const placeholder = document.createElement('div');
+      placeholder.className = 'placeholder';
+      placeholder.id = 'medioImgPlaceholder_' + idx;
+      placeholder.innerHTML = '<span>📷</span>Clic para subir una imagen (opcional)';
+      placeholder.style.display = existingImg ? 'none' : 'block';
+
+      const preview = document.createElement('img');
+      preview.id = 'medioImgPreview_' + idx;
+      preview.style.maxHeight = '140px';
+      preview.style.display = existingImg ? 'block' : 'none';
+      if (existingImg) preview.src = existingImg;
+
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.id = 'medioImgInput_' + idx;
+      fileInput.accept = 'image/*';
+      fileInput.style.display = 'none';
+      fileInput.onchange = function(e) { handleMedioImgUpload(e, idx); };
+
+      imgZone.appendChild(placeholder);
+      imgZone.appendChild(preview);
+      if (existingImg) imgZone.classList.add('has-img');
+
+      const urlFallback = document.createElement('input');
+      urlFallback.type = 'url';
+      urlFallback.id = 'medio_imagen_url_' + idx;
+      urlFallback.value = (existingImg && !existingImg.startsWith('data:')) ? existingImg : '';
+      urlFallback.placeholder = 'https://... (opcional, link directo a una imagen)';
+      urlFallback.style.marginTop = '8px';
+
+      const label = document.createElement('label');
+      label.textContent = item.titulo;
+      label.style.marginTop = '0';
+
+      wrap.appendChild(label);
+      wrap.appendChild(titleInput);
+      wrap.appendChild(bodyTextarea);
+      wrap.appendChild(imgZone);
+      wrap.appendChild(fileInput);
+      wrap.appendChild(urlFallback);
       container.appendChild(wrap);
     });
   }).catch(function(err) {
@@ -787,13 +849,62 @@ function loadElMedio() {
   });
 }
 
+function handleMedioImgUpload(e, idx) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      const MAX_WIDTH = 800;
+      let { width, height } = img;
+      if (width > MAX_WIDTH) {
+        height = Math.round(height * (MAX_WIDTH / width));
+        width = MAX_WIDTH;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      elMedioImages[idx] = canvas.toDataURL('image/jpeg', 0.7);
+
+      document.getElementById('medioImgPreview_' + idx).src = elMedioImages[idx];
+      document.getElementById('medioImgPreview_' + idx).style.display = 'block';
+      document.getElementById('medioImgPlaceholder_' + idx).style.display = 'none';
+      document.getElementById('medioImgZone_' + idx).classList.add('has-img');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function saveElMedio() {
   const config = {};
   EL_MEDIO_DEFAULTS.forEach(function(item, idx) {
-    config['medio_nombre_' + idx] = document.getElementById('medio_nombre_' + idx).value.trim();
-    config['medio_url_' + idx] = document.getElementById('medio_url_' + idx).value.trim();
+    config['medio_titulo_' + idx] = document.getElementById('medio_titulo_' + idx).value.trim();
+    config['medio_contenido_' + idx] = document.getElementById('medio_contenido_' + idx).value.trim();
+    const imgUrl = elMedioImages[idx] || document.getElementById('medio_imagen_url_' + idx).value.trim();
+    if (imgUrl) config['medio_imagen_' + idx] = imgUrl;
   });
   saveConfigToServer(config, 'configMedioStatus');
+}
+
+function loadPopupConfig() {
+  fetchConfig().then(function(cfg) {
+    document.getElementById('cfgPopupTitle').value = cfg.popup_title || 'Podcast RABIOZAS';
+    document.getElementById('cfgPopupSub').value = cfg.popup_sub || '';
+  }).catch(function(err) {
+    console.error('Error cargando configuración del pop-up:', err);
+  });
+}
+
+function savePopupConfig() {
+  const config = {
+    popup_title: document.getElementById('cfgPopupTitle').value.trim(),
+    popup_sub: document.getElementById('cfgPopupSub').value.trim()
+  };
+  saveConfigToServer(config, 'configPopupStatus');
 }
 
 function saveConfigToServer(config, statusElId) {
