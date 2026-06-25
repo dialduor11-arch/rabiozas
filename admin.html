@@ -122,7 +122,6 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
     <div class="panel-tabs">
       <div class="panel-tab active" id="tabNew" onclick="switchTab('new')">+ Nueva noticia</div>
       <div class="panel-tab" id="tabList" onclick="switchTab('list')">Noticias publicadas</div>
-      <div class="panel-tab" id="tabInicio" onclick="switchTab('inicio')">Editar Inicio</div>
     </div>
 
     <!-- ==== FORM NUEVA NOTICIA ==== -->
@@ -131,13 +130,12 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
         <h2 id="formTitle">Publicar noticia</h2>
 
         <label>Categoría</label>
-        <select id="fCategoria" onchange="toggleCategoryFields()">
+        <select id="fCategoria">
           <option value="genero">Género</option>
           <option value="ambiente">Ambiente</option>
           <option value="politica">Política</option>
           <option value="ddhh">Derechos Humanos</option>
           <option value="investigacion">Investigación</option>
-          <option value="podcast">Podcast</option>
         </select>
 
         <label>Título</label>
@@ -172,19 +170,6 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
         <input type="file" id="imgFileInput" accept="image/*" onchange="handleImgUpload(event)"/>
         <input type="url" id="fImagenUrl" placeholder="https://... (opcional, si no subes foto)" style="margin-top:8px"/>
 
-        <div id="audioField" style="display:none">
-          <label>Archivo de audio del episodio</label>
-          <div class="img-zone" id="audioZone" onclick="document.getElementById('audioFileInput').click()" style="padding:20px">
-            <div class="placeholder" id="audioPlaceholder">
-              <span>🎙️</span>
-              Clic para subir el archivo de audio (MP3, máx. ~15 MB)
-            </div>
-            <div id="audioFileName" style="display:none;font-weight:700;color:var(--pm);padding:14px;text-align:center"></div>
-          </div>
-          <input type="file" id="audioFileInput" accept="audio/*" onchange="handleAudioUpload(event)"/>
-          <input type="url" id="fAudioUrl" placeholder="https://... (opcional, link directo a un mp3 ya alojado)" style="margin-top:8px"/>
-        </div>
-
         <div class="checkbox-row">
           <input type="checkbox" id="fDestacado"/>
           <label for="fDestacado">Destacar esta noticia (aparece como Hero en Inicio)</label>
@@ -202,29 +187,6 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
     <div id="viewList" style="display:none">
       <button class="refresh-btn" onclick="loadNewsList()">↻ Actualizar lista</button>
       <div id="newsListContainer"></div>
-    </div>
-
-    <!-- ==== EDITAR INICIO (HERO + SIDEBAR) ==== -->
-    <div id="viewInicio" style="display:none">
-      <div class="card">
-        <h2>📰 Foto grande (Hero) de Inicio</h2>
-        <p style="font-size:12px;color:var(--gray);margin-top:-10px;margin-bottom:16px">
-          Elige cuál noticia ya publicada se muestra como la foto grande principal en Inicio.
-          Para que aparezca aquí, primero publícala normalmente y marca "Destacar esta noticia".
-        </p>
-        <button class="refresh-btn" onclick="loadHeroOptions()">↻ Ver noticias destacadas disponibles</button>
-        <div id="heroOptionsContainer" style="margin-top:14px"></div>
-      </div>
-
-      <div class="card">
-        <h2>📋 5 noticias del panel lateral (sidebar)</h2>
-        <p style="font-size:12px;color:var(--gray);margin-top:-10px;margin-bottom:16px">
-          Estas son las 5 noticias más recientes de cualquier categoría — se actualizan
-          automáticamente a medida que publicas. No requieren configuración manual.
-        </p>
-        <button class="refresh-btn" onclick="loadSidebarPreview()">↻ Ver vista previa actual</button>
-        <div id="sidebarPreviewContainer" style="margin-top:14px"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -283,47 +245,9 @@ window.addEventListener('DOMContentLoaded', function() {
 function switchTab(tab) {
   document.getElementById('tabNew').classList.toggle('active', tab === 'new');
   document.getElementById('tabList').classList.toggle('active', tab === 'list');
-  document.getElementById('tabInicio').classList.toggle('active', tab === 'inicio');
   document.getElementById('viewNew').style.display = tab === 'new' ? 'block' : 'none';
   document.getElementById('viewList').style.display = tab === 'list' ? 'block' : 'none';
-  document.getElementById('viewInicio').style.display = tab === 'inicio' ? 'block' : 'none';
   if (tab === 'list') loadNewsList();
-  if (tab === 'inicio') { loadHeroOptions(); loadSidebarPreview(); }
-}
-
-/* ============== CATEGORÍA DINÁMICA (mostrar campo de audio si es Podcast) ============== */
-function toggleCategoryFields() {
-  const cat = document.getElementById('fCategoria').value;
-  document.getElementById('audioField').style.display = (cat === 'podcast') ? 'block' : 'none';
-}
-
-/* ============== AUDIO (PODCAST) ============== */
-let uploadedAudioBase64 = null;
-
-function handleAudioUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const MAX_SIZE_MB = 15;
-  if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-    showStatus('⚠ El audio pesa más de ' + MAX_SIZE_MB + ' MB. Usa un archivo más liviano o pega un link directo abajo.', 'err');
-    return;
-  }
-
-  showStatus('⏳ Procesando audio...', 'loading');
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    uploadedAudioBase64 = ev.target.result;
-    document.getElementById('audioFileName').textContent = '🎧 ' + file.name;
-    document.getElementById('audioFileName').style.display = 'block';
-    document.getElementById('audioPlaceholder').style.display = 'none';
-    document.getElementById('audioZone').classList.add('has-img');
-    hideStatus();
-  };
-  reader.onerror = function() {
-    showStatus('✗ No se pudo procesar el audio. Intenta con otro archivo.', 'err');
-  };
-  reader.readAsDataURL(file);
 }
 
 /* ============== IMAGEN ============== */
@@ -380,16 +304,6 @@ function clearForm() {
   document.getElementById('imgPlaceholder').style.display = 'block';
   document.getElementById('imgZone').classList.remove('has-img');
   uploadedImageBase64 = null;
-
-  document.getElementById('fAudioUrl').value = '';
-  document.getElementById('audioFileName').style.display = 'none';
-  document.getElementById('audioFileName').textContent = '';
-  document.getElementById('audioPlaceholder').style.display = 'block';
-  document.getElementById('audioZone').classList.remove('has-img');
-  uploadedAudioBase64 = null;
-  document.getElementById('audioField').style.display = 'none';
-  document.getElementById('fCategoria').value = 'genero';
-
   editingId = null;
   document.getElementById('formTitle').textContent = 'Publicar noticia';
   document.getElementById('btnPublish').textContent = 'Publicar noticia';
@@ -419,7 +333,6 @@ function publishNews() {
     .join('');
 
   const imagenUrl = uploadedImageBase64 || document.getElementById('fImagenUrl').value.trim();
-  const audioUrl = uploadedAudioBase64 || document.getElementById('fAudioUrl').value.trim();
 
   const payload = {
     action: editingId ? 'update' : 'create',
@@ -431,7 +344,6 @@ function publishNews() {
     autor: document.getElementById('fAutor').value.trim() || 'Equipo Rabiozas',
     fuente: document.getElementById('fFuente').value.trim() || 'Rabiozas',
     imagenUrl: imagenUrl,
-    audioUrl: audioUrl,
     destacado: document.getElementById('fDestacado').checked
   };
 
@@ -472,120 +384,8 @@ function publishNews() {
 /* ============== LISTA / EDITAR / BORRAR ============== */
 const CAT_LABELS = {
   genero: 'Género', ambiente: 'Ambiente', politica: 'Política',
-  ddhh: 'Derechos Humanos', investigacion: 'Investigación', podcast: 'Podcast'
+  ddhh: 'Derechos Humanos', investigacion: 'Investigación'
 };
-
-/* ============== EDITAR INICIO: HERO + SIDEBAR ============== */
-function loadHeroOptions() {
-  const container = document.getElementById('heroOptionsContainer');
-  container.innerHTML = '<div class="empty-state"><span>⏳</span>Cargando...</div>';
-
-  fetch(API_URL)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data.ok) throw new Error(data.error || 'Error desconocido');
-      const destacadas = (data.noticias || []).filter(function(n) { return n.Destacado === 'SI'; });
-
-      if (destacadas.length === 0) {
-        container.innerHTML = '<div class="empty-state"><span>⭐</span>Ninguna noticia está marcada como destacada todavía.<br><small>Edita una noticia y activa "Destacar esta noticia" para que aparezca aquí.</small></div>';
-        return;
-      }
-
-      container.innerHTML = '';
-      destacadas.reverse().forEach(function(n) {
-        const div = document.createElement('div');
-        div.className = 'news-item';
-
-        const img = document.createElement('img');
-        img.src = n.ImagenURL || '';
-        if (!n.ImagenURL) img.style.display = 'none';
-        img.onerror = function() { this.style.display = 'none'; };
-
-        const info = document.createElement('div');
-        info.className = 'info';
-        const cat = document.createElement('div');
-        cat.className = 'cat';
-        cat.textContent = CAT_LABELS[n.Categoria] || n.Categoria;
-        const ttl = document.createElement('div');
-        ttl.className = 'ttl';
-        ttl.textContent = n.Titulo;
-        const meta = document.createElement('div');
-        meta.className = 'meta';
-        meta.textContent = '⭐ Esta es la que se muestra actualmente como Hero (la más reciente destacada)';
-        meta.style.color = 'var(--pm)';
-        meta.style.fontWeight = '700';
-        info.appendChild(cat);
-        info.appendChild(ttl);
-        info.appendChild(meta);
-
-        div.appendChild(img);
-        div.appendChild(info);
-        container.appendChild(div);
-      });
-
-      const note = document.createElement('p');
-      note.style.cssText = 'font-size:12px;color:var(--gray);margin-top:10px';
-      note.textContent = 'El sitio siempre muestra la noticia destacada más reciente como Hero. Si quieres cambiarla, desmarca "Destacar" en las anteriores y marca la nueva.';
-      container.appendChild(note);
-    })
-    .catch(function(err) {
-      container.innerHTML = '<div class="empty-state"><span>⚠</span>Error: ' + err.message + '</div>';
-    });
-}
-
-function loadSidebarPreview() {
-  const container = document.getElementById('sidebarPreviewContainer');
-  container.innerHTML = '<div class="empty-state"><span>⏳</span>Cargando...</div>';
-
-  fetch(API_URL)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data.ok) throw new Error(data.error || 'Error desconocido');
-      const todas = (data.noticias || []).slice().reverse().slice(0, 5);
-
-      if (todas.length === 0) {
-        container.innerHTML = '<div class="empty-state"><span>📭</span>Aún no hay noticias para mostrar en el sidebar.</div>';
-        return;
-      }
-
-      container.innerHTML = '';
-      todas.forEach(function(n, idx) {
-        const div = document.createElement('div');
-        div.className = 'news-item';
-
-        const num = document.createElement('div');
-        num.style.cssText = 'font-family:Poppins,sans-serif;font-weight:900;font-size:22px;color:var(--pl);min-width:28px;text-align:center;flex-shrink:0';
-        num.textContent = (idx + 1);
-
-        const info = document.createElement('div');
-        info.className = 'info';
-        const cat = document.createElement('div');
-        cat.className = 'cat';
-        cat.textContent = CAT_LABELS[n.Categoria] || n.Categoria;
-        const ttl = document.createElement('div');
-        ttl.className = 'ttl';
-        ttl.textContent = n.Titulo;
-        const meta = document.createElement('div');
-        meta.className = 'meta';
-        meta.textContent = fmtDate(n.Fecha);
-        info.appendChild(cat);
-        info.appendChild(ttl);
-        info.appendChild(meta);
-
-        div.appendChild(num);
-        div.appendChild(info);
-        container.appendChild(div);
-      });
-
-      const note = document.createElement('p');
-      note.style.cssText = 'font-size:12px;color:var(--gray);margin-top:10px';
-      note.textContent = 'Estas son siempre las 5 noticias más recientes (de cualquier categoría). Se actualizan solas — no necesitas hacer nada manual.';
-      container.appendChild(note);
-    })
-    .catch(function(err) {
-      container.innerHTML = '<div class="empty-state"><span>⚠</span>Error: ' + err.message + '</div>';
-    });
-}
 
 function loadNewsList() {
   const container = document.getElementById('newsListContainer');
@@ -658,7 +458,6 @@ function fmtDate(iso) {
 function editNews(n) {
   editingId = n.ID;
   document.getElementById('fCategoria').value = n.Categoria || 'genero';
-  toggleCategoryFields();
   document.getElementById('fTitulo').value = n.Titulo || '';
   document.getElementById('fResumen').value = n.Resumen || '';
   const cuerpoText = (n.Cuerpo || '').replace(/<\/p>\s*<p>/g, '\n\n').replace(/<\/?p>/g, '').replace(/<br\s*\/?>/g, '\n');
@@ -667,20 +466,12 @@ function editNews(n) {
   document.getElementById('fFuente').value = n.Fuente || 'Rabiozas';
   document.getElementById('fImagenUrl').value = (n.ImagenURL && !n.ImagenURL.startsWith('data:')) ? n.ImagenURL : '';
   document.getElementById('fDestacado').checked = (n.Destacado === 'SI');
-  document.getElementById('fAudioUrl').value = (n.AudioURL && !n.AudioURL.startsWith('data:')) ? n.AudioURL : '';
 
   if (n.ImagenURL) {
     document.getElementById('imgPreview').src = n.ImagenURL;
     document.getElementById('imgPreview').style.display = 'block';
     document.getElementById('imgPlaceholder').style.display = 'none';
     document.getElementById('imgZone').classList.add('has-img');
-  }
-
-  if (n.AudioURL) {
-    document.getElementById('audioFileName').textContent = '🎧 Audio ya cargado';
-    document.getElementById('audioFileName').style.display = 'block';
-    document.getElementById('audioPlaceholder').style.display = 'none';
-    document.getElementById('audioZone').classList.add('has-img');
   }
 
   document.getElementById('formTitle').textContent = 'Editar noticia';
