@@ -1,4 +1,4 @@
-<!-- RABIOZAS BUILD: 2026-06-25 18:49:36 | Config dinamica (encabezados+redes+ElMedio) + Hero/Sidebar + Opinion + Podcast -->
+<!-- RABIOZAS BUILD: 2026-06-25 19:28:06 | El Medio con contenido completo + Pop-up editable + Config dinamica -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2216,6 +2216,12 @@ var RABIOZAS_NEWS = (function() {
   function applySiteConfig(config) {
     if (!config) return;
 
+    // Pop-up de bienvenida del Podcast
+    var popupTitleEl = document.querySelector('.podcast-popup .pod-title');
+    var popupSubEl = document.querySelector('.podcast-popup .pod-sub');
+    if (popupTitleEl && config.popup_title) popupTitleEl.textContent = config.popup_title;
+    if (popupSubEl && config.popup_sub) popupSubEl.textContent = config.popup_sub;
+
     // Encabezados de categoría: <h1> y <p> dentro de cada .page-hero
     var catMap = {
       genero:        { sec: 'feminismo' },
@@ -2257,23 +2263,84 @@ var RABIOZAS_NEWS = (function() {
       });
     });
 
-    // El Medio: 5 links del footer
+    // El Medio: 5 apartados con título + contenido completo + imagen
+    var medioTitles = ['¿Quiénes somos?', 'Nuestro equipo', 'Transparencia', 'Código ético', 'Financiación'];
     for (var i = 0; i < 5; i++) {
-      var nombre = config['medio_nombre_' + i];
-      var url = config['medio_url_' + i];
-      if (!nombre) continue;
-      var medioLinks = document.querySelectorAll('.footer-col');
-      medioLinks.forEach(function(col) {
-        var h4 = col.querySelector('h4');
-        if (h4 && h4.textContent.trim().toLowerCase() === 'el medio') {
-          var anchors = col.querySelectorAll('a');
-          if (anchors[i]) {
-            anchors[i].textContent = nombre;
-            if (url) anchors[i].href = url;
+      var medioTitulo = config['medio_titulo_' + i] || medioTitles[i];
+      var medioContenido = config['medio_contenido_' + i] || '';
+      var medioImagen = config['medio_imagen_' + i] || '';
+      (function(idx, titulo, contenido, imagen) {
+        var medioLinks = document.querySelectorAll('.footer-col');
+        medioLinks.forEach(function(col) {
+          var h4 = col.querySelector('h4');
+          if (h4 && h4.textContent.trim().toLowerCase() === 'el medio') {
+            var anchors = col.querySelectorAll('a');
+            if (anchors[idx]) {
+              anchors[idx].textContent = titulo;
+              anchors[idx].href = 'javascript:void(0)';
+              anchors[idx].onclick = function(e) {
+                e.preventDefault();
+                abrirElMedio(titulo, contenido, imagen);
+              };
+            }
           }
-        }
-      });
+        });
+      })(i, medioTitulo, medioContenido, medioImagen);
     }
+  }
+
+  // ── Abrir un apartado de "El Medio" en el lector de página completa ──
+  function abrirElMedio(titulo, contenido, imagen) {
+    var tagEl = document.getElementById('afpTag');
+    tagEl.textContent = 'RABIOZAS';
+    tagEl.className = 'afp-tag t-pol';
+
+    document.getElementById('afpTitle').textContent = titulo || '';
+    document.getElementById('afpDeck').textContent = '';
+
+    var autor = 'Equipo Rabiozas';
+    document.getElementById('afpAuthor').textContent = autor;
+    var av = document.getElementById('afpAvatar');
+    av.textContent = 'R';
+    av.style.background = 'var(--pm)';
+    av.style.color = '#fff';
+    document.getElementById('afpDate').textContent = '';
+    document.getElementById('afpTime').textContent = '';
+
+    var heroImg = document.getElementById('afpHeroImg');
+    var heroEmoji = document.getElementById('afpHeroEmoji');
+    if (imagen) {
+      heroImg.src = imagen;
+      heroImg.alt = titulo;
+      heroImg.style.display = 'block';
+      heroEmoji.style.display = 'none';
+      heroImg.onerror = function() { this.style.display = 'none'; heroEmoji.style.display = 'flex'; heroEmoji.textContent = '📰'; };
+    } else {
+      heroImg.style.display = 'none';
+      heroEmoji.style.display = 'none';
+    }
+
+    var bodyEl = document.getElementById('afpBody');
+    if (contenido && contenido.trim().length > 0) {
+      var html = contenido.split(/\n\s*\n/).map(function(p) {
+        return p.trim() ? '<p>' + p.trim().replace(/\n/g, '<br>') + '</p>' : '';
+      }).join('');
+      bodyEl.innerHTML = html;
+    } else {
+      bodyEl.innerHTML = '<p style="color:#9ca3af">Este apartado aún no tiene contenido. Edítalo desde el panel admin, pestaña "Configuración del sitio".</p>';
+    }
+
+    var srcLink = document.getElementById('afpSourceLink');
+    if (srcLink) srcLink.style.display = 'none';
+    var banner = document.getElementById('afpSourceBanner');
+    if (banner) banner.style.display = 'none';
+    var sfooter = document.getElementById('afpSourceFooter');
+    if (sfooter) sfooter.style.display = 'none';
+
+    var fp = document.getElementById('articleFullPage');
+    fp.classList.add('open');
+    fp.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
   }
 
   // ── Cargar todo ──────────────────────────────────────────────────────
