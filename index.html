@@ -1,4 +1,4 @@
-<!-- RABIOZAS BUILD: 2026-06-24 20:30:07 | Transicion ola morada-verde entre secciones (estilo Jacarandas) -->
+<!-- RABIOZAS BUILD: 2026-06-25 17:14:25 | Hero+Sidebar dinamicos desde Sheet + Inicio simplificado + Ola vertical -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -343,7 +343,7 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
 .page-transition-overlay.run{visibility:visible;opacity:1}
 .transition-wave{
   position:absolute;top:0;left:0;width:100%;height:100%;
-  transform:translateX(-100%);
+  transform:translateY(-100%);
 }
 .transition-wave path{}
 .wave-purple path{fill:#7C3AED}
@@ -355,10 +355,10 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
   animation-delay:70ms;
 }
 @keyframes waveSweep{
-  0%{transform:translateX(-100%)}
-  45%{transform:translateX(0%)}
-  55%{transform:translateX(0%)}
-  100%{transform:translateX(100%)}
+  0%{transform:translateY(-100%)}
+  45%{transform:translateY(0%)}
+  55%{transform:translateY(0%)}
+  100%{transform:translateY(100%)}
 }
 @media(max-width:700px){
   .wave-purple path{fill:#7C3AED}
@@ -397,13 +397,13 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
 </head>
 <body>
 
-<!-- TRANSICIÓN ENTRE SECCIONES — ola morada/verde estilo Jacarandas -->
+<!-- TRANSICIÓN ENTRE SECCIONES — ola morada/verde estilo Jacarandas (vertical, cubre toda la pantalla) -->
 <div class="page-transition-overlay" id="pageTransitionOverlay">
   <svg class="transition-wave wave-purple" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0,0 L1440,0 L1440,820 C1200,900 900,760 700,820 C500,880 250,760 0,840 Z"/>
+    <path d="M0,0 L1440,0 L1440,860 C1200,900 1080,820 900,860 C720,900 600,820 420,860 C240,900 120,820 0,860 Z"/>
   </svg>
   <svg class="transition-wave wave-lime" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0,0 L1440,0 L1440,760 C1150,860 950,700 720,760 C480,820 220,680 0,780 Z"/>
+    <path d="M0,0 L1440,0 L1440,800 C1200,840 1080,760 900,800 C720,840 600,760 420,800 C240,840 120,760 0,800 Z"/>
   </svg>
 </div>
 
@@ -477,233 +477,21 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
 
   <!-- HERO -->
   <div class="hero-grid">
-    <article class="hero-main" onclick="openArticle('hero')">
+    <article class="hero-main" id="heroMainCard" onclick="if(window._heroArticle) abrirArticulo(window._heroArticle.art, window._heroArticle.catKey)">
       <div style="position:relative">
-        <img style="width:100%;height:320px;object-fit:cover;display:block" src="https://d1x0qnenkl91hi.cloudfront.net/uploads/crops/full-width/feminismo_867af2b5bd_full-width.webp" alt="Crisis climática y mujeres" loading="eager" onerror="this.parentNode.style.background='linear-gradient(135deg,#4c1d95,#7c3aed,#C1FF00)'"/>
-        <span style="position:absolute;bottom:6px;right:8px;font-size:10px;color:rgba(255,255,255,.8);background:rgba(0,0,0,.5);padding:2px 6px;border-radius:3px">Foto: Colprensa / Cambio Colombia</span>
+        <img id="heroImg" style="width:100%;height:320px;object-fit:cover;display:block" src="" alt="" loading="eager" onerror="this.parentNode.style.background='linear-gradient(135deg,#4c1d95,#7c3aed,#C1FF00)'"/>
       </div>
       <div class="hero-content">
-        <span class="hero-tag">Ambiente</span>
-        <h2 class="hero-title">La crisis climática golpea desproporcionalmente a las mujeres: informe de ONU Mujeres revela brechas estructurales en América Latina</h2>
-        <div class="hero-meta" id="heroMeta">Por <strong>Camila Ríos</strong> · hace 2 horas · 8 min de lectura</div>
+        <span class="hero-tag" id="heroTag">Cargando...</span>
+        <h2 class="hero-title" id="heroTitleText"></h2>
+        <div class="hero-meta" id="heroMeta"></div>
       </div>
     </article>
-    <div class="sidebar-articles">
-      <article class="side-card" onclick="openArticle('s1')">
-        <img style="width:80px;height:70px;border-radius:6px;object-fit:cover;flex-shrink:0" src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&h=400&fit=crop&q=80" alt="Política" loading="lazy" data-emoji="🏛️" data-bg="#ddd6fe" onerror="sideCardImgError(this)"/>
-        <div><div class="side-tag t-pol">Política</div><div class="side-title">Agenda Feminista 2026-2030: organizaciones exigen al próximo gobierno priorizar la igualdad</div><div class="side-time">hace 1 hora</div></div>
-      </article>
-      <article class="side-card" onclick="openArticle('s2')">
-        <img style="width:80px;height:70px;border-radius:6px;object-fit:cover;flex-shrink:0" src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=700&h=400&fit=crop&q=80" alt="Feminismo" loading="lazy" data-emoji="✊" data-bg="#F5FFB8" onerror="sideCardImgError(this)"/>
-        <div><div class="side-tag t-fem">Género</div><div class="side-title">Casa de la Mujer de Bogotá vandali­zada: Ministerio de Justicia exige investigación</div><div class="side-time">hace 3 horas</div></div>
-      </article>
-      <article class="side-card" onclick="openArticle('s3')">
-        <img style="width:80px;height:70px;border-radius:6px;object-fit:cover;flex-shrink:0" src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=700&h=400&fit=crop&q=80" alt="DDHH" loading="lazy" data-emoji="⚖️" data-bg="#fffbeb" onerror="sideCardImgError(this)"/>
-        <div><div class="side-tag t-dh">Derechos Humanos</div><div class="side-title">457 amenazas de muerte a líderes sociales en contexto electoral, alerta la Defensoría del Pueblo</div><div class="side-time">hace 4 horas</div></div>
-      </article>
-      <article class="side-card" onclick="openArticle('s4')">
-        <img style="width:80px;height:70px;border-radius:6px;object-fit:cover;flex-shrink:0" src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=700&h=400&fit=crop&q=80" alt="Ambiente" loading="lazy" data-emoji="🌿" data-bg="#dcfce7" onerror="sideCardImgError(this)"/>
-        <div><div class="side-tag t-amb">Ambiente</div><div class="side-title">Mujeres indígenas del Putumayo bloquean operaciones mineras con apoyo de la CIDH</div><div class="side-time">hace 5 horas</div></div>
-      </article>
-      <article class="side-card" onclick="openArticle('s5')">
-        <img style="width:80px;height:70px;border-radius:6px;object-fit:cover;flex-shrink:0" src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=700&h=400&fit=crop&q=80" alt="Política" loading="lazy" data-emoji="🏛️" data-bg="#ddd6fe" onerror="sideCardImgError(this)"/>
-        <div><div class="side-tag t-pol">Política</div><div class="side-title">Violencia digital contra candidatas: el doble desafío de las mujeres en las elecciones 2026</div><div class="side-time">hace 6 horas</div></div>
-      </article>
+    <div class="sidebar-articles" id="sidebarArticlesContainer">
+      <!-- Se rellena dinámicamente desde el panel admin -->
     </div>
   </div>
 
-  <div class="blob-divider blob-divider-1"><svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 C150,55 300,10 450,30 C600,50 750,5 900,25 C1050,45 1150,15 1200,0 L1200,60 L0,60 Z" fill="#EDE9FE" opacity=".5"/></svg></div>
-
-  <!-- FEMINISMO -->
-    <div class="sec-header">
-    <span class="sec-dot" style="background:var(--pm)"></span>
-    <span class="sec-title" style="color:var(--pm)">Género</span>
-    <div class="sec-line" style="background:var(--rl)"></div>
-    <a onclick="showSection('feminismo')" style="font-size:12px;color:var(--pm);cursor:pointer;white-space:nowrap;font-weight:600;font-family:'Poppins',sans-serif;letter-spacing:1px">VER TODO →</a>
-  </div>
-  <div class="news-carousel-wrap">
-  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-inicio-genero',-1)" aria-label="Anterior">‹</button>
-  <div class="news-grid" id="grid-inicio-genero" onscroll="updateCarouselArrows('grid-inicio-genero')">
-    <article class="news-card" onclick="openArticle('f1')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://d1x0qnenkl91hi.cloudfront.net/uploads/COLP_318972_b1a10adfee.jpeg" alt="#NiUnaMenos: una década de lucha que cambió el continente — balance desde América Latina" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/><span style="position:absolute;bottom:3px;right:5px;font-size:9px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.4);padding:1px 4px;border-radius:2px">Foto: Colprensa</span></div>
-      <div class="card-body">
-        <span class="card-tag t-fem">Género</span>
-        <h3 class="card-title">#NiUnaMenos: una década de lucha que cambió el continente — balance desde América Latina</h3>
-        <p class="card-excerpt">Activistas evaluaron avances y deudas pendientes del movimiento que transformó el debate sobre violencia de género.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#E2FF00;color:#7C3AED">LM</div>Laura Mendoza</div><span>hace 4h · 6 min</span></div>
-      </div>
-    </article>
-    <article class="news-card" onclick="openArticle('f2')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1513364776144-28b578c63ac7?w=700&h=400&fit=crop&q=80" alt="Agenda Feminista 2026-2030: organizaciones construyen hoja de ruta para el próximo gobierno" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/><span style="position:absolute;bottom:3px;right:5px;font-size:9px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.4);padding:1px 4px;border-radius:2px">Foto: Cambio/Colprensa</span></div>
-      <div class="card-body">
-        <span class="card-tag t-fem">Género</span>
-        <h3 class="card-title">Agenda Feminista 2026-2030: organizaciones construyen hoja de ruta para el próximo gobierno</h3>
-        <p class="card-excerpt">Sisma Mujer, Ruta Pacífica y Red Nacional de Mujeres presentaron cinco dimensiones prioritarias de política pública.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">VS</div>Valentina Soto</div><span>hace 2h · 7 min</span></div>
-      </div>
-    </article>
-    <article class="news-card" onclick="openArticle('f3')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1584308666744-c46591972a37?w=700&h=400&fit=crop&q=80" alt="Economía del cuidado: el trabajo invisible que sostiene el mundo y nadie contabiliza en el PIB" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/><span style="position:absolute;bottom:3px;right:5px;font-size:9px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.4);padding:1px 4px;border-radius:2px">Foto: Colprensa</span></div>
-      <div class="card-body">
-        <span class="card-tag t-fem">Género</span>
-        <h3 class="card-title">Economía del cuidado: el trabajo invisible que sostiene el mundo y nadie contabiliza en el PIB</h3>
-        <p class="card-excerpt">Las mujeres dedican en promedio 7 horas y 44 minutos diarios al trabajo no remunerado, según el DANE.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#16a34a">AP</div>Andrea Parra</div><span>Ayer · 9 min</span></div>
-      </div>
-    </article>
-  </div>
-  <button class="carousel-arrow next" onclick="scrollCarousel('grid-inicio-genero',1)" aria-label="Siguiente">›</button>
-</div>
-
-  <div class="blob-divider blob-divider-2"><svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,30 C150,5 300,50 450,25 C600,0 750,45 900,20 C1050,0 1150,35 1200,15 L1200,60 L0,60 Z" fill="#D1FAE5" opacity=".5"/></svg></div>
-
-  <!-- MEDIO AMBIENTE -->
-    <div class="sec-header">
-    <span class="sec-dot" style="background:var(--gm)"></span>
-    <span class="sec-title" style="color:var(--g)">Ambiente</span>
-    <div class="sec-line" style="background:var(--gl)"></div>
-    <a onclick="showSection('medioambiente')" style="font-size:12px;color:var(--g);cursor:pointer;white-space:nowrap;font-weight:600;font-family:'Poppins',sans-serif;letter-spacing:1px">VER TODO →</a>
-  </div>
-  <div class="news-carousel-wrap">
-  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-inicio-ambiente',-1)" aria-label="Anterior">‹</button>
-  <div class="news-grid" id="grid-inicio-ambiente" onscroll="updateCarouselArrows('grid-inicio-ambiente')">
-    <article class="news-card" onclick="openArticle('m1')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=700&h=400&fit=crop&q=80" alt="Defensoras del Amazonas: mujeres indígenas al frente de la resistencia ecológica en el Putumayo" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
-      <div class="card-body">
-        <span class="card-tag t-amb">Ambiente</span>
-        <h3 class="card-title">Defensoras del Amazonas: mujeres indígenas al frente de la resistencia ecológica en el Putumayo</h3>
-        <p class="card-excerpt">Comunidades lideradas por mujeres enfrentan amenazas de grupos ilegales por proteger sus territorios ancestrales.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#16a34a">NQ</div>Natalia Quintero</div><span>hace 2h · 10 min</span></div>
-      </div>
-    </article>
-    <article class="news-card" onclick="openArticle('m2')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=700&h=400&fit=crop&q=80" alt="Energía solar y sororidad: cooperativas de mujeres que transforman el Caribe colombiano" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
-      <div class="card-body">
-        <span class="card-tag t-amb">Ambiente</span>
-        <h3 class="card-title">Energía solar y sororidad: cooperativas de mujeres que transforman el Caribe colombiano</h3>
-        <p class="card-excerpt">34 campesinas en Bolívar instalaron y gestionan colectivamente paneles solares; tres veredas tienen luz por primera vez.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#E2FF00;color:#7C3AED">RC</div>Rosa Castro</div><span>hace 8h · 5 min</span></div>
-      </div>
-    </article>
-    <article class="news-card" onclick="openArticle('m3')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1470813740244-df30734eeb10?w=700&h=400&fit=crop&q=80" alt="COP30 en Belém do Pará: el feminismo climático exige ser eje central y no decorado de la agenda" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
-      <div class="card-body">
-        <span class="card-tag t-amb">Ambiente</span>
-        <h3 class="card-title">COP30 en Belém do Pará: el feminismo climático exige ser eje central y no decorado de la agenda</h3>
-        <p class="card-excerpt">Organizaciones de América Latina presentaron 10 demandas concretas antes de las negociaciones de noviembre.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">PG</div>Pilar García</div><span>Ayer · 8 min</span></div>
-      </div>
-    </article>
-  </div>
-  <button class="carousel-arrow next" onclick="scrollCarousel('grid-inicio-ambiente',1)" aria-label="Siguiente">›</button>
-</div>
-
-  <div class="blob-divider blob-divider-3"><svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,15 C150,45 300,0 450,28 C600,55 750,10 900,32 C1050,50 1150,8 1200,30 L1200,60 L0,60 Z" fill="#EDE9FE" opacity=".5"/></svg></div>
-
-  <!-- OPINIÓN + POLÍTICA + DDHH -->
-  <div>
-        <div class="sec-header">
-    <span class="sec-dot" style="background:var(--pm)"></span>
-    <span class="sec-title" style="color:var(--pm)">Columnas de Opinión</span>
-    <div class="sec-line" style="background:var(--pl)"></div>
-    <a onclick="showSection('opinion')" style="font-size:12px;color:var(--pm);cursor:pointer;white-space:nowrap;font-weight:600;font-family:'Poppins',sans-serif;letter-spacing:1px">VER TODO →</a>
-  </div>
-      <div class="news-carousel-wrap">
-  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-opinion-inicio',-1)" aria-label="Anterior">‹</button>
-  <div class="opinion-grid" id="grid-opinion-inicio">
-        <div class="opinion-card" onclick="openArticle('op1')">
-          <div class="op-avatar" style="background:#E2FF00;color:#7C3AED">MR</div>
-          <div class="op-author">María Rondón</div>
-          <div class="op-role">Abogada, feminista</div>
-          <div class="op-title">El aborto no es debate, es derecho: reflexiones desde la trinchera legal</div>
-          <p style="font-size:12px;color:var(--gray);margin-top:6px;line-height:1.5">La penalización no protege la vida; protege el control patriarcal sobre los cuerpos.</p>
-        </div>
-        <div class="opinion-card" onclick="openArticle('op2')">
-          <div class="op-avatar" style="background:#7c3aed">CT</div>
-          <div class="op-author">Carmen Torres</div>
-          <div class="op-role">Ecologista, activista</div>
-          <div class="op-title">Pachamama y feminismo: dos luchas que nacieron juntas y no pueden separarse</div>
-          <p style="font-size:12px;color:var(--gray);margin-top:6px;line-height:1.5">No puede haber justicia climática sin justicia de género. El ecofeminismo lo sabe desde siempre.</p>
-        </div>
-        <div class="opinion-card" onclick="openArticle('op3')">
-          <div class="op-avatar" style="background:#16a34a">IS</div>
-          <div class="op-author">Isabel Salinas</div>
-          <div class="op-role">Periodista, DDHH</div>
-          <div class="op-title">El periodismo feminista no es sesgo, es necesidad histórica y deuda con las silenciadas</div>
-          <p style="font-size:12px;color:var(--gray);margin-top:6px;line-height:1.5">La objetividad de la prensa tradicional ha sido siempre la objetividad del poder.</p>
-        </div>
-        <div class="opinion-card" onclick="openArticle('op4')">
-          <div class="op-avatar" style="background:#0891b2">DL</div>
-          <div class="op-author">Diana López</div>
-          <div class="op-role">Politóloga</div>
-          <div class="op-title">Paridad sin sororidad: la trampa del feminismo liberal en los gobiernos de la región</div>
-          <p style="font-size:12px;color:var(--gray);margin-top:6px;line-height:1.5">Poner mujeres en el poder sin transformar las estructuras es maquillar el patriarcado.</p>
-        </div>
-      </div>
-  <button class="carousel-arrow next" onclick="scrollCarousel('grid-opinion-inicio',1)" aria-label="Siguiente">›</button>
-</div>
-
-        <div class="sec-header">
-    <span class="sec-dot" style="background:var(--pm)"></span>
-    <span class="sec-title" style="color:var(--pm)">Política</span>
-    <div class="sec-line" style="background:var(--pl)"></div>
-    <a onclick="showSection('politica')" style="font-size:12px;color:var(--pm);cursor:pointer;white-space:nowrap;font-weight:600;font-family:'Poppins',sans-serif;letter-spacing:1px">VER TODO →</a>
-  </div>
-      <div class="news-carousel-wrap">
-  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-inicio-politica',-1)" aria-label="Anterior">‹</button>
-  <div class="news-grid" id="grid-inicio-politica" onscroll="updateCarouselArrows('grid-inicio-politica')">
-    <article class="news-card" onclick="openArticle('p1')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://d1x0qnenkl91hi.cloudfront.net/uploads/COLP_318978_7a18ac0fe4.jpeg" alt="Bancada de mujeres logra incluir violencia económica y simbólica en ley de violencia intrafamiliar" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/><span style="position:absolute;bottom:3px;right:5px;font-size:9px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.4);padding:1px 4px;border-radius:2px">Foto: El Espectador</span></div>
-      <div class="card-body">
-        <span class="card-tag t-pol">Política</span>
-        <h3 class="card-title">Bancada de mujeres logra incluir violencia económica y simbólica en ley de violencia intrafamiliar</h3>
-        <p class="card-excerpt">El nuevo texto amplía las modalidades reconocidas y punibles más allá de la violencia física.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">SF</div>Sara Fuentes</div><span>hace 3h</span></div>
-      </div>
-    </article>
-    <article class="news-card" onclick="openArticle('p2')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&h=400&fit=crop&q=80&flip=h" alt="El 67% de mujeres colombianas se siente excluida de la política según encuesta nacional" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/><span style="position:absolute;bottom:3px;right:5px;font-size:9px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.4);padding:1px 4px;border-radius:2px">Foto: Colprensa</span></div>
-      <div class="card-body">
-        <span class="card-tag t-pol">Política</span>
-        <h3 class="card-title">El 67% de mujeres colombianas se siente excluida de la política según encuesta nacional</h3>
-        <p class="card-excerpt">El estudio señala que el 54% han sufrido violencia política de género en alguna de sus formas.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#C1FF00">AM</div>Ana Mora</div><span>Ayer</span></div>
-      </div>
-    </article>
-      </div>
-  <button class="carousel-arrow next" onclick="scrollCarousel('grid-inicio-politica',1)" aria-label="Siguiente">›</button>
-</div>
-
-        <div class="sec-header">
-    <span class="sec-dot" style="background:#d97706"></span>
-    <span class="sec-title" style="color:#b45309">Derechos Humanos</span>
-    <div class="sec-line" style="background:#fef3c7"></div>
-    <a onclick="showSection('ddhh')" style="font-size:12px;color:#b45309;cursor:pointer;white-space:nowrap;font-weight:600;font-family:'Poppins',sans-serif;letter-spacing:1px">VER TODO →</a>
-  </div>
-      <div class="news-carousel-wrap">
-  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-inicio-ddhh',-1)" aria-label="Anterior">‹</button>
-  <div class="news-grid" id="grid-inicio-ddhh" onscroll="updateCarouselArrows('grid-inicio-ddhh')">
-    <article class="news-card" onclick="openArticle('dh1')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://www.elespectador.com/resizer/v2/WN2BZJWRJ3BZMHNSOACH5Q4WT4.jpg?auth=136324e39bac56cf6d97d49c5d252569ce29aa3fd2df4e42e72139775ad506ae&width=700&smart=true&quality=80" alt="457 amenazas de muerte contra líderes sociales en contexto preelectoral registra la Defensoría" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/><span style="position:absolute;bottom:3px;right:5px;font-size:9px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.4);padding:1px 4px;border-radius:2px">Foto: El Espectador</span></div>
-      <div class="card-body">
-        <span class="card-tag t-dh">DDHH</span>
-        <h3 class="card-title">457 amenazas de muerte contra líderes sociales en contexto preelectoral registra la Defensoría</h3>
-        <p class="card-excerpt">Las mujeres enfrentan mayor riesgo: violencia de género armada y vetos a su movilización en el Cauca.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">DM</div>Diana Mejía</div><span>hace 5h</span></div>
-      </div>
-    </article>
-    <article class="news-card" onclick="openArticle('dh2')">
-      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://www.elespectador.com/resizer/v2/WBY73HE5FREQXEM4N4CKS7K3GE.jpg?auth=43d8243a7bf714cd9998af3f22d7eedac23415e392ea5cdb9cf7f7949575c7e9&width=700&smart=true&quality=80" alt="Corte IDH condena a Colombia por violaciones a derechos de 23 mujeres defensoras de DDHH" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/><span style="position:absolute;bottom:3px;right:5px;font-size:9px;color:rgba(255,255,255,.75);background:rgba(0,0,0,.4);padding:1px 4px;border-radius:2px">Foto: El Espectador</span></div>
-      <div class="card-body">
-        <span class="card-tag t-dh">DDHH</span>
-        <h3 class="card-title">Corte IDH condena a Colombia por violaciones a derechos de 23 mujeres defensoras de DDHH</h3>
-        <p class="card-excerpt">Fallo histórico obliga a reformar protocolos de protección y pagar reparaciones individuales.</p>
-        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#d97706">IP</div>Isabel Pérez</div><span>hace 1d</span></div>
-      </div>
-    </article>
-      </div>
-  <button class="carousel-arrow next" onclick="scrollCarousel('grid-inicio-ddhh',1)" aria-label="Siguiente">›</button>
-</div>
     </div>
   </div>
 </main>
@@ -1983,17 +1771,45 @@ var RABIOZAS_NEWS = (function() {
     investigacion: { label:'Investigación', tagBg:'bg-pol', tagText:'t-pol', icon:'🔍', grids:['grid-investigacion'],                    inv:true  }
   };
 
-  var DATA = null; // Cache del JSON cargado
+  var DATA = null; // Cache de las noticias cargadas
+  var SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbx5z1PBFmzYHhm5rMlORepI8Mhm1h9njaF9zjrv1cfib1R9L-jtGWBGfS8xftar0-6C/exec';
 
-  // ── Carga noticias.json (mismo directorio que el HTML) ──────────────
+  // ── Carga noticias directamente desde el Google Sheet (panel admin) ──
   function cargarJSON() {
     if (DATA) return Promise.resolve(DATA);
-    return fetch('noticias.json?v=' + Date.now())
+    return fetch(SHEET_API_URL + '?v=' + Date.now())
       .then(function(r) {
-        if (!r.ok) throw new Error('No se encontró noticias.json (' + r.status + ')');
+        if (!r.ok) throw new Error('No se pudo conectar con el panel de noticias (' + r.status + ')');
         return r.json();
       })
-      .then(function(d) {
+      .then(function(raw) {
+        if (!raw.ok) throw new Error(raw.error || 'Error desconocido leyendo noticias');
+
+        // Transformar filas del Sheet (Categoria/Titulo/Resumen/...) al formato esperado
+        var categorias = { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] };
+        (raw.noticias || []).forEach(function(row) {
+          var cat = (row.Categoria || '').toLowerCase().trim();
+          if (!categorias[cat]) return; // categoría desconocida, se ignora
+          categorias[cat].push({
+            titulo:      row.Titulo || '',
+            descripcion: row.Resumen || '',
+            cuerpo:      row.Cuerpo || '',
+            autor:       row.Autor || 'Equipo Rabiozas',
+            fecha:       row.Fecha || new Date().toISOString(),
+            imagen:      row.ImagenURL || '',
+            fuente:      row.Fuente || 'Rabiozas',
+            url:         '',
+            propio:      true,
+            destacado:   row.Destacado === 'SI'
+          });
+        });
+
+        // Más recientes primero
+        Object.keys(categorias).forEach(function(k) {
+          categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+        });
+
+        var d = { generado: new Date().toISOString(), categorias: categorias };
         DATA = d;
         return d;
       });
@@ -2317,6 +2133,85 @@ var RABIOZAS_NEWS = (function() {
     });
   }
 
+  // ── Hero + sidebar de Inicio: leídos del mismo Sheet ya cargado ──────
+  function populateHeroAndSidebar(data) {
+    var heroImg   = document.getElementById('heroImg');
+    var heroTag   = document.getElementById('heroTag');
+    var heroTitle = document.getElementById('heroTitleText');
+    var heroMeta  = document.getElementById('heroMeta');
+    var heroCard  = document.getElementById('heroMainCard');
+    var sideWrap  = document.getElementById('sidebarArticlesContainer');
+    if (!heroCard || !sideWrap) return; // no estamos en Inicio
+
+    // Juntar todas las noticias de todas las categorías en una sola lista
+    var todas = [];
+    Object.keys(data.categorias || {}).forEach(function(catKey) {
+      (data.categorias[catKey] || []).forEach(function(art) {
+        todas.push({ art: art, catKey: catKey });
+      });
+    });
+    todas.sort(function(a, b) { return new Date(b.art.fecha) - new Date(a.art.fecha); });
+
+    // HERO: la más reciente marcada como destacada; si no hay ninguna, la más reciente de todas
+    var destacadas = todas.filter(function(t) { return t.art.destacado; });
+    var heroPick = destacadas[0] || todas[0];
+
+    if (heroPick) {
+      var cat = CATS[heroPick.catKey] || { label: 'Rabiozas' };
+      heroImg.src = heroPick.art.imagen || '';
+      heroImg.alt = heroPick.art.titulo || '';
+      heroTag.textContent = cat.label;
+      heroTitle.textContent = heroPick.art.titulo || '';
+      heroMeta.innerHTML = 'Por <strong>' + (heroPick.art.autor || 'Equipo Rabiozas') + '</strong> · ' + timeAgo(heroPick.art.fecha);
+      window._heroArticle = heroPick;
+    } else {
+      heroTag.textContent = 'Rabiozas';
+      heroTitle.textContent = 'Aún no hay noticias publicadas';
+      heroMeta.textContent = 'Publica tu primera noticia desde el panel admin';
+    }
+
+    // SIDEBAR: las 5 más recientes (excluyendo la que ya es Hero, si aplica)
+    var sideItems = todas.filter(function(t) { return t !== heroPick; }).slice(0, 5);
+    sideWrap.innerHTML = '';
+    if (sideItems.length === 0) {
+      sideWrap.innerHTML = '<div style="padding:16px;color:#9ca3af;font-size:13px;font-family:Poppins,sans-serif">Aún no hay más noticias.</div>';
+      return;
+    }
+    sideItems.forEach(function(item) {
+      var cat = CATS[item.catKey] || { label: 'Rabiozas', tagText: 't-pol', icon: '📰' };
+      var card = document.createElement('article');
+      card.className = 'side-card';
+      card.onclick = function() { abrirArticulo(item.art, item.catKey); };
+
+      var img = document.createElement('img');
+      img.style.cssText = 'width:80px;height:70px;border-radius:6px;object-fit:cover;flex-shrink:0';
+      img.src = item.art.imagen || '';
+      img.alt = item.art.titulo || '';
+      img.loading = 'lazy';
+      img.setAttribute('data-emoji', cat.icon || '📰');
+      img.setAttribute('data-bg', '#ddd6fe');
+      img.onerror = function() { sideCardImgError(this); };
+
+      var info = document.createElement('div');
+      var tag = document.createElement('div');
+      tag.className = 'side-tag ' + (cat.tagText || 't-pol');
+      tag.textContent = cat.label;
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = item.art.titulo || '';
+      var time = document.createElement('div');
+      time.className = 'side-time';
+      time.textContent = timeAgo(item.art.fecha);
+      info.appendChild(tag);
+      info.appendChild(title);
+      info.appendChild(time);
+
+      card.appendChild(img);
+      card.appendChild(info);
+      sideWrap.appendChild(card);
+    });
+  }
+
   // ── Cargar todo ──────────────────────────────────────────────────────
   function updateAll() {
     var btn = document.getElementById('globalRefreshBtn');
@@ -2334,8 +2229,9 @@ var RABIOZAS_NEWS = (function() {
 
     cargarJSON().then(function(data) {
       Object.keys(CATS).forEach(function(key) { updateCat(key, data); });
+      populateHeroAndSidebar(data);
       var gen = data.generado ? new Date(data.generado).toLocaleString('es-CO') : '';
-      setStatus('✓ Noticias cargadas' + (gen ? ' · Generadas: ' + gen : ''));
+      setStatus('✓ Noticias actualizadas desde el panel' + (gen ? ' · ' + gen : ''));
       if (btn) btn.style.animation = '';
       badge('✓ Noticias actualizadas');
       if (window.initCarouselArrows) window.initCarouselArrows();
@@ -2367,7 +2263,7 @@ var RABIOZAS_NEWS = (function() {
       }
     }).catch(function(e) {
       console.error('[Rabiozas] Error cargando noticias.json:', e);
-      setStatus('⚠ No se encontró noticias.json — ejecuta generar_noticias.py');
+      setStatus('⚠ No se pudo conectar con el panel de noticias — verifica tu conexión');
       if (btn) btn.style.animation = '';
     });
   }
