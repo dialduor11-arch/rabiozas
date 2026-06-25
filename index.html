@@ -1,4 +1,4 @@
-<!-- RABIOZAS BUILD: 2026-06-25 19:28:06 | El Medio con contenido completo + Pop-up editable + Config dinamica -->
+<!-- RABIOZAS BUILD: 2026-06-25 19:54:55 | Podcast: compartir real + episodios clicables + hover morado -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -288,7 +288,13 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
 @keyframes pulse-red{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
 
 /* PODCAST */
-.ep-card{background:#fff;border-radius:10px;padding:16px;border:1px solid #f3f4f6;cursor:pointer;transition:box-shadow .2s}
+.ep-card{background:#fff;border-radius:10px;padding:16px;border:1.5px solid #f3f4f6;cursor:pointer;transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,background .25s ease,border-color .25s ease}
+.ep-card:hover{background:var(--pll);border-color:var(--pl);box-shadow:0 10px 28px rgba(124,58,237,.22);transform:translateY(-5px) scale(1.015)}
+.ep-card:active{transform:translateY(-2px) scale(.99)}
+.ep-card.is-active{background:var(--pll);border-color:var(--pm);box-shadow:0 6px 18px rgba(124,58,237,.18)}
+.pod-share-btn{color:#fff;border:none;border-radius:20px;padding:8px 16px;font-family:'Poppins',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:transform .15s,opacity .15s}
+.pod-share-btn:hover{transform:translateY(-2px);opacity:.9}
+.pod-share-btn:active{transform:translateY(0)}
 .ep-card:hover{box-shadow:0 4px 14px rgba(124,58,237,.12)}
 
 /* NEWSLETTER */
@@ -554,21 +560,27 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
     <p style="border-left-color:var(--rm)">Conversaciones profundas con mujeres que transforman su entorno. Nuevos episodios cada martes.</p>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-    <div style="background:linear-gradient(135deg,#4c1d95,#C1FF00);border-radius:14px;padding:24px;color:#fff">
+    <div id="podPlayerCard" style="background:linear-gradient(135deg,#4c1d95,#C1FF00);border-radius:14px;padding:24px;color:#fff;transition:background .3s,opacity .15s">
       <div style="font-size:48px;margin-bottom:12px">🎙️</div>
-      <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#e9d5ff;margin-bottom:6px">EPISODIO MÁS RECIENTE · EP. 47</div>
-      <h2 style="font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;margin-bottom:10px">La maternidad como trampa: testimonios de madres precarizadas</h2>
-      <p style="font-size:14px;color:#e9d5ff;line-height:1.6;margin-bottom:18px">Conversamos con tres madres cabeza de hogar sobre cómo el sistema castiga la maternidad.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div id="podPlayerEpLabel" style="font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#e9d5ff;margin-bottom:6px">EPISODIO MÁS RECIENTE · EP. 47</div>
+      <h2 id="podPlayerTitle" style="font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;margin-bottom:10px">La maternidad como trampa: testimonios de madres precarizadas</h2>
+      <p id="podPlayerDesc" style="font-size:14px;color:#e9d5ff;line-height:1.6;margin-bottom:18px">Conversamos con tres madres cabeza de hogar sobre cómo el sistema castiga la maternidad.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
         <button style="background:#fff;color:#4c1d95;border:none;border-radius:20px;padding:8px 20px;font-family:'Poppins',sans-serif;font-weight:700;font-size:13px;cursor:pointer">▶ Escuchar</button>
-        <button style="background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:20px;padding:8px 20px;font-family:'Poppins',sans-serif;font-weight:700;font-size:13px;cursor:pointer">+ Compartir</button>
+        <button onclick="togglePodShare()" style="background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:20px;padding:8px 20px;font-family:'Poppins',sans-serif;font-weight:700;font-size:13px;cursor:pointer">+ Compartir</button>
+      </div>
+      <div id="podSharePanel" style="display:none;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid rgba(255,255,255,.25)">
+        <button onclick="sharePodcast('whatsapp')" class="pod-share-btn" style="background:#25D366">📱 WhatsApp</button>
+        <button onclick="sharePodcast('twitter')" class="pod-share-btn" style="background:#000">𝕏 Twitter</button>
+        <button onclick="sharePodcast('facebook')" class="pod-share-btn" style="background:#1877F2">f Facebook</button>
+        <button onclick="sharePodcast('copy')" class="pod-share-btn" style="background:rgba(255,255,255,.2)" id="podCopyBtn">🔗 Copiar link</button>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="ep-card"><div style="font-family:'Poppins',sans-serif;font-size:11px;letter-spacing:2px;color:var(--pm);font-weight:700;margin-bottom:4px">EP. 46</div><div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px">Mujeres en la primera línea del paro</div><div style="font-size:12px;color:var(--gray)">48 min · hace 1 semana</div></div>
-      <div class="ep-card"><div style="font-family:'Poppins',sans-serif;font-size:11px;letter-spacing:2px;color:var(--pm);font-weight:700;margin-bottom:4px">EP. 45</div><div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px">Aborto legal: mujeres que abortaron cuentan su historia</div><div style="font-size:12px;color:var(--gray)">62 min · hace 2 semanas</div></div>
-      <div class="ep-card"><div style="font-family:'Poppins',sans-serif;font-size:11px;letter-spacing:2px;color:var(--pm);font-weight:700;margin-bottom:4px">EP. 44</div><div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px">Lideresas indígenas y la defensa del territorio</div><div style="font-size:12px;color:var(--gray)">55 min · hace 3 semanas</div></div>
-      <div class="ep-card"><div style="font-family:'Poppins',sans-serif;font-size:11px;letter-spacing:2px;color:var(--pm);font-weight:700;margin-bottom:4px">EP. 43</div><div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px">Feminismo y clase: debates que la izquierda evita</div><div style="font-size:12px;color:var(--gray)">71 min · hace 1 mes</div></div>
+    <div id="podEpList" style="display:flex;flex-direction:column;gap:12px">
+      <div class="ep-card" data-ep="46" data-title="Mujeres en la primera línea del paro" data-desc="Voces directas desde las marchas: por qué decidieron parar y qué piden." data-meta="48 min · hace 1 semana" onclick="selectPodEpisode(this)"><div style="font-family:'Poppins',sans-serif;font-size:11px;letter-spacing:2px;color:var(--pm);font-weight:700;margin-bottom:4px">EP. 46</div><div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px">Mujeres en la primera línea del paro</div><div style="font-size:12px;color:var(--gray)">48 min · hace 1 semana</div></div>
+      <div class="ep-card" data-ep="45" data-title="Aborto legal: mujeres que abortaron cuentan su historia" data-desc="Testimonios en primera persona sobre el acceso al aborto legal en Colombia." data-meta="62 min · hace 2 semanas" onclick="selectPodEpisode(this)"><div style="font-family:'Poppins',sans-serif;font-size:11px;letter-spacing:2px;color:var(--pm);font-weight:700;margin-bottom:4px">EP. 45</div><div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px">Aborto legal: mujeres que abortaron cuentan su historia</div><div style="font-size:12px;color:var(--gray)">62 min · hace 2 semanas</div></div>
+      <div class="ep-card" data-ep="44" data-title="Lideresas indígenas y la defensa del territorio" data-desc="Conversamos con tres lideresas indígenas sobre la defensa del territorio frente a la minería." data-meta="55 min · hace 3 semanas" onclick="selectPodEpisode(this)"><div style="font-family:'Poppins',sans-serif;font-size:11px;letter-spacing:2px;color:var(--pm);font-weight:700;margin-bottom:4px">EP. 44</div><div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px">Lideresas indígenas y la defensa del territorio</div><div style="font-size:12px;color:var(--gray)">55 min · hace 3 semanas</div></div>
+      <div class="ep-card" data-ep="43" data-title="Feminismo y clase: debates que la izquierda evita" data-desc="Un debate honesto sobre las tensiones entre feminismo y clase social." data-meta="71 min · hace 1 mes" onclick="selectPodEpisode(this)"><div style="font-family:'Poppins',sans-serif;font-size:11px;letter-spacing:2px;color:var(--pm);font-weight:700;margin-bottom:4px">EP. 43</div><div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px">Feminismo y clase: debates que la izquierda evita</div><div style="font-size:12px;color:var(--gray)">71 min · hace 1 mes</div></div>
     </div>
   </div>
 </div>
@@ -1758,6 +1770,60 @@ function closePodcastPopup() {
 }
 
 function goHome(){showSection('inicio');}
+
+/* ── Podcast: seleccionar episodio de la lista → actualiza el recuadro grande ── */
+function selectPodEpisode(card) {
+  document.querySelectorAll('#podEpList .ep-card').forEach(function(c) {
+    c.classList.remove('is-active');
+  });
+  card.classList.add('is-active');
+
+  var ep = card.getAttribute('data-ep');
+  var title = card.getAttribute('data-title');
+  var desc = card.getAttribute('data-desc');
+  var meta = card.getAttribute('data-meta');
+
+  var playerCard = document.getElementById('podPlayerCard');
+  playerCard.style.opacity = '0';
+  setTimeout(function() {
+    document.getElementById('podPlayerEpLabel').textContent = 'EP. ' + ep + ' · ' + meta;
+    document.getElementById('podPlayerTitle').textContent = title;
+    document.getElementById('podPlayerDesc').textContent = desc;
+    window._currentPodEpisode = { ep: ep, title: title, desc: desc };
+    playerCard.style.opacity = '1';
+  }, 150);
+
+  document.getElementById('podSharePanel').style.display = 'none';
+}
+
+/* ── Podcast: mostrar/ocultar panel de compartir ── */
+function togglePodShare() {
+  var panel = document.getElementById('podSharePanel');
+  var isOpen = panel.style.display === 'flex';
+  panel.style.display = isOpen ? 'none' : 'flex';
+}
+
+/* ── Podcast: compartir en redes sociales ── */
+function sharePodcast(network) {
+  var title = document.getElementById('podPlayerTitle').textContent || 'Podcast RABIOZAS';
+  var shareUrl = window.location.href.split('#')[0] + '#podcast';
+  var text = '🎙️ ' + title + ' — Podcast RABIOZAS';
+
+  if (network === 'whatsapp') {
+    window.open('https://wa.me/?text=' + encodeURIComponent(text + ' ' + shareUrl), '_blank');
+  } else if (network === 'twitter') {
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(shareUrl), '_blank');
+  } else if (network === 'facebook') {
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl), '_blank');
+  } else if (network === 'copy') {
+    navigator.clipboard.writeText(shareUrl).then(function() {
+      var btn = document.getElementById('podCopyBtn');
+      var original = btn.textContent;
+      btn.textContent = '✓ Copiado';
+      setTimeout(function() { btn.textContent = original; }, 2000);
+    });
+  }
+}
 </script>
 <script>
 /* ── RABIOZAS NEWS — Lee noticias.json generado por generar_noticias.py ── */
