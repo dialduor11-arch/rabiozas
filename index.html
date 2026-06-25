@@ -1,4 +1,4 @@
-<!-- RABIOZAS BUILD: 2026-06-25 17:14:25 | Hero+Sidebar dinamicos desde Sheet + Inicio simplificado + Ola vertical -->
+<!-- RABIOZAS BUILD: 2026-06-25 18:49:36 | Config dinamica (encabezados+redes+ElMedio) + Hero/Sidebar + Opinion + Podcast -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1809,7 +1809,7 @@ var RABIOZAS_NEWS = (function() {
           categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
         });
 
-        var d = { generado: new Date().toISOString(), categorias: categorias };
+        var d = { generado: new Date().toISOString(), categorias: categorias, config: raw.config || {} };
         DATA = d;
         return d;
       });
@@ -2212,6 +2212,70 @@ var RABIOZAS_NEWS = (function() {
     });
   }
 
+  // ── Aplicar configuración del sitio (encabezados, redes, El Medio) ───
+  function applySiteConfig(config) {
+    if (!config) return;
+
+    // Encabezados de categoría: <h1> y <p> dentro de cada .page-hero
+    var catMap = {
+      genero:        { sec: 'feminismo' },
+      ambiente:      { sec: 'medioambiente' },
+      politica:      { sec: 'politica' },
+      ddhh:          { sec: 'ddhh' },
+      opinion:       { sec: 'opinion' },
+      investigacion: { sec: 'investigacion' }
+    };
+    Object.keys(catMap).forEach(function(key) {
+      var sec = catMap[key].sec;
+      var pageHero = document.querySelector('#page-' + sec + ' .page-hero');
+      if (!pageHero) return;
+      var h1 = pageHero.querySelector('h1');
+      var p = pageHero.querySelector('p');
+      var emoji = config['cat_emoji_' + key];
+      var title = config['cat_title_' + key];
+      var desc  = config['cat_desc_' + key];
+      if (h1 && (emoji || title)) {
+        h1.textContent = (emoji || '') + ' ' + (title || h1.textContent.replace(/^\S+\s/, ''));
+      }
+      if (p && desc) p.textContent = desc;
+    });
+
+    // Redes sociales del footer
+    var socialMap = {
+      social_instagram: 'Instagram',
+      social_twitter: 'Twitter / X',
+      social_tiktok: 'TikTok',
+      social_telegram: 'Telegram'
+    };
+    Object.keys(socialMap).forEach(function(confKey) {
+      var url = config[confKey];
+      if (!url) return;
+      var label = socialMap[confKey];
+      var links = document.querySelectorAll('.footer-col a');
+      links.forEach(function(a) {
+        if (a.textContent.trim() === label) a.href = url;
+      });
+    });
+
+    // El Medio: 5 links del footer
+    for (var i = 0; i < 5; i++) {
+      var nombre = config['medio_nombre_' + i];
+      var url = config['medio_url_' + i];
+      if (!nombre) continue;
+      var medioLinks = document.querySelectorAll('.footer-col');
+      medioLinks.forEach(function(col) {
+        var h4 = col.querySelector('h4');
+        if (h4 && h4.textContent.trim().toLowerCase() === 'el medio') {
+          var anchors = col.querySelectorAll('a');
+          if (anchors[i]) {
+            anchors[i].textContent = nombre;
+            if (url) anchors[i].href = url;
+          }
+        }
+      });
+    }
+  }
+
   // ── Cargar todo ──────────────────────────────────────────────────────
   function updateAll() {
     var btn = document.getElementById('globalRefreshBtn');
@@ -2230,6 +2294,7 @@ var RABIOZAS_NEWS = (function() {
     cargarJSON().then(function(data) {
       Object.keys(CATS).forEach(function(key) { updateCat(key, data); });
       populateHeroAndSidebar(data);
+      applySiteConfig(data.config);
       var gen = data.generado ? new Date(data.generado).toLocaleString('es-CO') : '';
       setStatus('✓ Noticias actualizadas desde el panel' + (gen ? ' · ' + gen : ''));
       if (btn) btn.style.animation = '';
