@@ -1,4 +1,4 @@
-<!-- RABIOZAS BUILD: 2026-06-26 16:40:37 | Carga instantanea + sin duplicados + secciones nunca vacias (respaldo) -->
+<!-- RABIOZAS BUILD: 2026-06-26 18:29:19 | Solo noticias con imagen + sin imagenes repetidas + carga instantanea -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1883,11 +1883,17 @@ var RABIOZAS_NEWS = (function() {
     var feeds = RSS_FEEDS[catKey] || [];
     var promesas = feeds.map(function(feed) {
       var apiUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed.url);
-      return fetch(apiUrl)
-        .then(function(r) { return r.json(); })
+      var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timeoutId = controller ? setTimeout(function(){ controller.abort(); }, 4000) : null;
+
+      return fetch(apiUrl, controller ? { signal: controller.signal } : {})
+        .then(function(r) {
+          if (timeoutId) clearTimeout(timeoutId);
+          return r.json();
+        })
         .then(function(data) {
           if (!data.items) return [];
-          return data.items.slice(0, maxItems || 4).map(function(item) {
+          return data.items.slice(0, (maxItems || 4) * 2).map(function(item) {
             var imgMatch = (item.content || '').match(/<img[^>]+src=["']([^"']+)["']/);
             var imagen = (item.thumbnail && item.thumbnail.indexOf('http') === 0) ? item.thumbnail
                        : (imgMatch ? imgMatch[1] : '');
@@ -1903,12 +1909,21 @@ var RABIOZAS_NEWS = (function() {
               propio: false,
               destacado: false
             };
-          });
+          })
+          .filter(function(art) { return art.imagen; }) // solo noticias con imagen real
+          .slice(0, maxItems || 4);
         })
-        .catch(function() { return []; }); // si un feed falla, seguimos con los demás
+        .catch(function() { return []; }); // si un feed falla o tarda mucho, seguimos con los demás
     });
     return Promise.all(promesas).then(function(arrays) {
-      return arrays.reduce(function(a, b) { return a.concat(b); }, []);
+      var combinadas = arrays.reduce(function(a, b) { return a.concat(b); }, []);
+      // Evitar imágenes repetidas entre sí dentro de la misma categoría
+      var imgsVistas = {};
+      return combinadas.filter(function(art) {
+        if (imgsVistas[art.imagen]) return false;
+        imgsVistas[art.imagen] = true;
+        return true;
+      });
     });
   }
 
@@ -2580,14 +2595,13 @@ var RABIOZAS_NEWS = (function() {
     if (btn) btn.style.animation = 'spin 1s linear infinite';
     setStatus('🔄 Cargando noticias...');
 
-    Object.keys(CATS).forEach(function(key) {
-      var cat = CATS[key];
-      var max = cat.inv ? 4 : 6;
-      cat.grids.forEach(function(id) {
-        var g = document.getElementById(id);
-        if (g) skeleton(g, max, cat.inv);
-      });
-    });
+    // Mostrar contenido de respaldo REAL de inmediato (no un skeleton gris),
+    // así la página nunca se ve vacía ni "esperando" mientras llega la red.
+    if (!DATA) {
+      var datosInstantaneos = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
+      Object.keys(CATS).forEach(function(key) { updateCat(key, datosInstantaneos); });
+      populateHeroAndSidebar(datosInstantaneos);
+    }
 
     // FASE 1 — render inmediato con lo que ya hay en el panel (rápido, sin esperar RSS)
     cargarSheetRapido().then(function(baseData) {
