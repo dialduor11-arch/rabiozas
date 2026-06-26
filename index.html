@@ -1,4 +1,4 @@
-<!-- RABIOZAS BUILD: 2026-06-25 19:54:55 | Podcast: compartir real + episodios clicables + hover morado -->
+<!-- RABIOZAS BUILD: 2026-06-26 16:08:07 | RSS de medios recuperado + mezclado con panel admin por fecha -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -326,6 +326,21 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
 .brand-name{font-family:'Poppins',sans-serif;font-weight:900;font-size:42px;color:#7C3AED;letter-spacing:4px;line-height:1}
 .brand-tagline-bottom{font-family:'Poppins',sans-serif;font-weight:600;font-size:11px;letter-spacing:3px;color:#7C3AED;text-transform:uppercase;line-height:1}
 .header-tools{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* RESPONSIVE HEADER — evita que el buscador se salga de la pantalla en mobile */
+@media(max-width:700px){
+  .header-brand-bar{flex-wrap:wrap;row-gap:10px;padding:10px 14px}
+  .brand-logo-img{width:48px;height:48px}
+  .brand-name{font-size:22px;letter-spacing:1px}
+  .brand-tagline-bottom{font-size:8px;letter-spacing:1px}
+  .header-tools{width:100%;flex-wrap:wrap;justify-content:flex-start;row-gap:8px}
+  .header-search{max-width:none!important;flex:1 1 100%;order:1}
+}
+@media(max-width:480px){
+  .brand-logo-wrap{gap:10px}
+  .header-tools .btn-outline{display:none}
+}
+
 /* TICKER OVERRIDES */
 .breaking-bar{background:var(--pm)!important;color:#fff;padding:0;display:flex;align-items:center;height:36px;overflow:hidden;position:relative}
 .breaking-label{display:none!important}
@@ -1840,9 +1855,67 @@ var RABIOZAS_NEWS = (function() {
   var DATA = null; // Cache de las noticias cargadas
   var SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbx5z1PBFmzYHhm5rMlORepI8Mhm1h9njaF9zjrv1cfib1R9L-jtGWBGfS8xftar0-6C/exec';
 
-  // ── Carga noticias directamente desde el Google Sheet (panel admin) ──
+  // ── Feeds RSS de medios LATAM por categoría (vía rss2json.com) ────────
+  var RSS_FEEDS = {
+    genero: [
+      { url: 'https://www.elespectador.com/genero/feed/', medio: 'El Espectador' },
+      { url: 'https://www.nodal.am/category/genero/feed/', medio: 'Nodal' }
+    ],
+    ambiente: [
+      { url: 'https://www.elespectador.com/medio-ambiente/feed/', medio: 'El Espectador' },
+      { url: 'https://www.nodal.am/category/medio-ambiente/feed/', medio: 'Nodal' }
+    ],
+    politica: [
+      { url: 'https://www.elespectador.com/politica/feed/', medio: 'El Espectador' },
+      { url: 'https://lasillavacia.com/feed', medio: 'La Silla Vacía' }
+    ],
+    ddhh: [
+      { url: 'https://www.elespectador.com/judicial/feed/', medio: 'El Espectador' },
+      { url: 'https://www.nodal.am/category/ddhh/feed/', medio: 'Nodal' }
+    ],
+    investigacion: [
+      { url: 'https://www.elespectador.com/investigacion/feed/', medio: 'El Espectador' },
+      { url: 'https://lasillavacia.com/feed', medio: 'La Silla Vacía' }
+    ]
+  };
+
+  function fetchRSSForCategory(catKey, maxItems) {
+    var feeds = RSS_FEEDS[catKey] || [];
+    var promesas = feeds.map(function(feed) {
+      var apiUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed.url);
+      return fetch(apiUrl)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.items) return [];
+          return data.items.slice(0, maxItems || 4).map(function(item) {
+            var imgMatch = (item.content || '').match(/<img[^>]+src=["']([^"']+)["']/);
+            var imagen = (item.thumbnail && item.thumbnail.indexOf('http') === 0) ? item.thumbnail
+                       : (imgMatch ? imgMatch[1] : '');
+            return {
+              titulo: item.title || '',
+              descripcion: (item.description || '').replace(/<[^>]+>/g, '').slice(0, 200),
+              cuerpo: item.content || item.description || '',
+              autor: item.author || feed.medio,
+              fecha: item.pubDate || new Date().toISOString(),
+              imagen: imagen,
+              fuente: feed.medio,
+              url: item.link || '',
+              propio: false,
+              destacado: false
+            };
+          });
+        })
+        .catch(function() { return []; }); // si un feed falla, seguimos con los demás
+    });
+    return Promise.all(promesas).then(function(arrays) {
+      return arrays.reduce(function(a, b) { return a.concat(b); }, []);
+    });
+  }
+
+  // ── Carga noticias del panel (Sheet) + RSS de medios, mezcladas por fecha ──
   function cargarJSON() {
     if (DATA) return Promise.resolve(DATA);
+
     return fetch(SHEET_API_URL + '?v=' + Date.now())
       .then(function(r) {
         if (!r.ok) throw new Error('No se pudo conectar con el panel de noticias (' + r.status + ')');
@@ -1855,7 +1928,7 @@ var RABIOZAS_NEWS = (function() {
         var categorias = { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] };
         (raw.noticias || []).forEach(function(row) {
           var cat = (row.Categoria || '').toLowerCase().trim();
-          if (!categorias[cat]) return; // categoría desconocida, se ignora
+          if (!categorias[cat]) return; // categoría desconocida (ej: podcast, opinion), se ignora aquí
           categorias[cat].push({
             titulo:      row.Titulo || '',
             descripcion: row.Resumen || '',
@@ -1870,14 +1943,28 @@ var RABIOZAS_NEWS = (function() {
           });
         });
 
-        // Más recientes primero
-        Object.keys(categorias).forEach(function(k) {
-          categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
-        });
-
-        var d = { generado: new Date().toISOString(), categorias: categorias, config: raw.config || {} };
-        DATA = d;
-        return d;
+        // Traer el RSS de cada categoría en paralelo y mezclarlo con lo del panel
+        var catKeys = Object.keys(categorias);
+        return Promise.all(catKeys.map(function(k) { return fetchRSSForCategory(k); }))
+          .then(function(rssResults) {
+            catKeys.forEach(function(k, idx) {
+              categorias[k] = categorias[k].concat(rssResults[idx]);
+              // Mezclados por fecha, sin importar la fuente
+              categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+            });
+            var d = { generado: new Date().toISOString(), categorias: categorias, config: raw.config || {} };
+            DATA = d;
+            return d;
+          })
+          .catch(function() {
+            // Si el RSS falla por completo, mostramos al menos lo del panel
+            catKeys.forEach(function(k) {
+              categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+            });
+            var d = { generado: new Date().toISOString(), categorias: categorias, config: raw.config || {} };
+            DATA = d;
+            return d;
+          });
       });
   }
 
