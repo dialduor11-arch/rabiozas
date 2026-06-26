@@ -1,4 +1,4 @@
-<!-- RABIOZAS BUILD: 2026-06-26 16:08:07 | RSS de medios recuperado + mezclado con panel admin por fecha -->
+<!-- RABIOZAS BUILD: 2026-06-26 16:40:37 | Carga instantanea + sin duplicados + secciones nunca vacias (respaldo) -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1841,7 +1841,7 @@ function sharePodcast(network) {
 }
 </script>
 <script>
-/* ── RABIOZAS NEWS — Lee noticias.json generado por generar_noticias.py ── */
+/* ── RABIOZAS NEWS — Lee el panel admin (Google Sheet) + RSS de medios en vivo ── */
 var RABIOZAS_NEWS = (function() {
 
   var CATS = {
@@ -1913,9 +1913,8 @@ var RABIOZAS_NEWS = (function() {
   }
 
   // ── Carga noticias del panel (Sheet) + RSS de medios, mezcladas por fecha ──
-  function cargarJSON() {
-    if (DATA) return Promise.resolve(DATA);
-
+  // ── Carga rápida: solo el Sheet (panel admin), sin esperar al RSS ────
+  function cargarSheetRapido() {
     return fetch(SHEET_API_URL + '?v=' + Date.now())
       .then(function(r) {
         if (!r.ok) throw new Error('No se pudo conectar con el panel de noticias (' + r.status + ')');
@@ -1924,7 +1923,6 @@ var RABIOZAS_NEWS = (function() {
       .then(function(raw) {
         if (!raw.ok) throw new Error(raw.error || 'Error desconocido leyendo noticias');
 
-        // Transformar filas del Sheet (Categoria/Titulo/Resumen/...) al formato esperado
         var categorias = { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] };
         (raw.noticias || []).forEach(function(row) {
           var cat = (row.Categoria || '').toLowerCase().trim();
@@ -1942,30 +1940,35 @@ var RABIOZAS_NEWS = (function() {
             destacado:   row.Destacado === 'SI'
           });
         });
+        Object.keys(categorias).forEach(function(k) {
+          categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+        });
 
-        // Traer el RSS de cada categoría en paralelo y mezclarlo con lo del panel
-        var catKeys = Object.keys(categorias);
-        return Promise.all(catKeys.map(function(k) { return fetchRSSForCategory(k); }))
-          .then(function(rssResults) {
-            catKeys.forEach(function(k, idx) {
-              categorias[k] = categorias[k].concat(rssResults[idx]);
-              // Mezclados por fecha, sin importar la fuente
-              categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
-            });
-            var d = { generado: new Date().toISOString(), categorias: categorias, config: raw.config || {} };
-            DATA = d;
-            return d;
-          })
-          .catch(function() {
-            // Si el RSS falla por completo, mostramos al menos lo del panel
-            catKeys.forEach(function(k) {
-              categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
-            });
-            var d = { generado: new Date().toISOString(), categorias: categorias, config: raw.config || {} };
-            DATA = d;
-            return d;
-          });
+        return { generado: new Date().toISOString(), categorias: categorias, config: raw.config || {} };
       });
+  }
+
+  // ── Carga completa: Sheet + RSS mezclados (puede tardar más) ─────────
+  function cargarJSON() {
+    if (DATA) return Promise.resolve(DATA);
+
+    return cargarSheetRapido().then(function(base) {
+      var catKeys = Object.keys(base.categorias);
+      return Promise.all(catKeys.map(function(k) { return fetchRSSForCategory(k); }))
+        .then(function(rssResults) {
+          catKeys.forEach(function(k, idx) {
+            base.categorias[k] = base.categorias[k].concat(rssResults[idx]);
+            base.categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+          });
+          DATA = base;
+          return base;
+        })
+        .catch(function() {
+          // Si el RSS falla por completo, nos quedamos con lo del panel
+          DATA = base;
+          return base;
+        });
+    });
   }
 
   // ── Tiempo relativo ──────────────────────────────────────────────────
@@ -2265,21 +2268,56 @@ var RABIOZAS_NEWS = (function() {
   }
 
   // ── Actualizar una categoría con datos del JSON ──────────────────────
+  // ── Contenido de respaldo (nunca caduca) para que ninguna sección quede vacía ──
+  var FALLBACK_CONTENT = {
+    genero: [
+      { titulo: 'La brecha salarial de género sigue siendo una deuda pendiente en América Latina', descripcion: 'Estudios de la OIT muestran que las mujeres latinoamericanas ganan en promedio 17% menos que los hombres en puestos equivalentes.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'El trabajo de cuidado no remunerado: la economía invisible que sostiene los hogares', descripcion: 'Las mujeres dedican en promedio 3 veces más horas al trabajo doméstico no pagado que los hombres en la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+    ],
+    ambiente: [
+      { titulo: 'Mujeres rurales, primeras afectadas por la crisis climática en la región', descripcion: 'Sequías e inundaciones golpean con más fuerza a comunidades donde las mujeres sostienen la producción de alimentos.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Líderes ambientales: el riesgo de defender el territorio en América Latina', descripcion: 'La región sigue siendo la más peligrosa del mundo para quienes defienden la tierra y el medio ambiente.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+    ],
+    politica: [
+      { titulo: 'La representación política de las mujeres avanza, pero el poder real sigue concentrado', descripcion: 'Aunque hay más mujeres en cargos de elección, los espacios de decisión real siguen mayoritariamente masculinos.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Paridad de género en la política: lo que falta para una representación real', descripcion: 'Las leyes de paridad avanzan en la región, pero su implementación sigue siendo desigual entre países.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+    ],
+    ddhh: [
+      { titulo: 'Defensoras de derechos humanos: la violencia que enfrentan por su labor', descripcion: 'Organizaciones de la región documentan un aumento sostenido de amenazas contra mujeres defensoras de derechos humanos.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Acceso a la justicia para mujeres víctimas de violencia: las barreras que persisten', descripcion: 'Pese a avances legales, miles de mujeres siguen enfrentando obstáculos para acceder a la justicia en la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+    ],
+    investigacion: [
+      { titulo: 'Investigación: el costo real de la violencia de género en cifras', descripcion: 'Un análisis de datos públicos revela el impacto económico y social de la violencia de género en la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+    ]
+  };
+
+  function getFallbackArt(key, idx) {
+    var pool = FALLBACK_CONTENT[key] || FALLBACK_CONTENT.genero;
+    var base = pool[idx % pool.length];
+    return {
+      titulo: base.titulo, descripcion: base.descripcion, cuerpo: '',
+      autor: base.autor, fecha: new Date().toISOString(), imagen: '',
+      fuente: base.fuente, url: '', propio: true, destacado: false
+    };
+  }
+
   function updateCat(key, data) {
     var cat  = CATS[key];
-    var arts = (data.categorias && data.categorias[key]) || [];
+    var arts = ((data.categorias && data.categorias[key]) || []).slice();
     var max  = cat.inv ? 4 : 6;
     var grids = cat.grids.map(function(id) { return document.getElementById(id); }).filter(Boolean);
 
+    // Completar con contenido de respaldo si faltan noticias para llenar el carrusel,
+    // así ninguna sección se ve nunca vacía o a medias.
+    var minDeseado = cat.inv ? 4 : 5;
+    var i = 0;
+    while (arts.length < minDeseado) {
+      arts.push(getFallbackArt(key, i));
+      i++;
+    }
+
     grids.forEach(function(g) {
       g.innerHTML = '';
-      if (!arts.length) {
-        var msg = document.createElement('div');
-        msg.style.cssText = 'grid-column:1/-1;padding:24px;text-align:center;color:#9ca3af;font-family:Poppins,sans-serif;font-size:13px';
-        msg.textContent = 'Sin noticias. Ejecuta generar_noticias.py y sube noticias.json.';
-        g.appendChild(msg);
-        return;
-      }
       arts.slice(0, max).forEach(function(art) {
         g.appendChild(cat.inv ? makeInvCard(art, key) : makeCard(art, key));
       });
@@ -2296,10 +2334,15 @@ var RABIOZAS_NEWS = (function() {
     var sideWrap  = document.getElementById('sidebarArticlesContainer');
     if (!heroCard || !sideWrap) return; // no estamos en Inicio
 
-    // Juntar todas las noticias de todas las categorías en una sola lista
+    // Juntar todas las noticias de todas las categorías en una sola lista,
+    // evitando duplicados (la misma noticia de RSS puede salir en 2 categorías)
     var todas = [];
+    var vistos = {};
     Object.keys(data.categorias || {}).forEach(function(catKey) {
       (data.categorias[catKey] || []).forEach(function(art) {
+        var clave = (art.url || art.titulo || '').trim().toLowerCase();
+        if (vistos[clave]) return; // ya está en la lista, se ignora
+        vistos[clave] = true;
         todas.push({ art: art, catKey: catKey });
       });
     });
@@ -2497,6 +2540,41 @@ var RABIOZAS_NEWS = (function() {
   }
 
   // ── Cargar todo ──────────────────────────────────────────────────────
+  function renderData(data, statusPrefix) {
+    Object.keys(CATS).forEach(function(key) { updateCat(key, data); });
+    populateHeroAndSidebar(data);
+    applySiteConfig(data.config);
+    var gen = data.generado ? new Date(data.generado).toLocaleString('es-CO') : '';
+    setStatus(statusPrefix + (gen ? ' · ' + gen : ''));
+    if (window.initCarouselArrows) window.initCarouselArrows();
+    if (window.initScrollReveal) window.initScrollReveal();
+
+    // Titular en ticker con primeras noticias
+    var track = document.getElementById('tickerTrack');
+    if (track) {
+      var todas = [];
+      ['genero','politica','ddhh','ambiente','investigacion'].forEach(function(k) {
+        var arts = data.categorias[k] || [];
+        arts.slice(0,2).forEach(function(a) { todas.push({txt: a.titulo, sec: k === 'investigacion' ? 'page-investigacion' : 'page-' + k}); });
+      });
+      track.innerHTML = '';
+      todas.concat(todas).forEach(function(item) {
+        var sp = document.createElement('span');
+        sp.className = 'ticker-item';
+        sp.style.color = '#fff';
+        sp.textContent = '● ' + item.txt;
+        sp.setAttribute('data-sec', item.sec);
+        sp.onclick = function() { if (window.showSection) showSection(this.getAttribute('data-sec')); };
+        var sep = document.createElement('span');
+        sep.className = 'ticker-sep';
+        sep.style.cssText = 'color:rgba(255,255,255,.4);padding-right:48px;font-size:16px';
+        sep.textContent = '◆';
+        track.appendChild(sp);
+        track.appendChild(sep);
+      });
+    }
+  }
+
   function updateAll() {
     var btn = document.getElementById('globalRefreshBtn');
     if (btn) btn.style.animation = 'spin 1s linear infinite';
@@ -2511,44 +2589,24 @@ var RABIOZAS_NEWS = (function() {
       });
     });
 
-    cargarJSON().then(function(data) {
-      Object.keys(CATS).forEach(function(key) { updateCat(key, data); });
-      populateHeroAndSidebar(data);
-      applySiteConfig(data.config);
-      var gen = data.generado ? new Date(data.generado).toLocaleString('es-CO') : '';
-      setStatus('✓ Noticias actualizadas desde el panel' + (gen ? ' · ' + gen : ''));
+    // FASE 1 — render inmediato con lo que ya hay en el panel (rápido, sin esperar RSS)
+    cargarSheetRapido().then(function(baseData) {
+      renderData(baseData, '✓ Noticias del panel cargadas');
       if (btn) btn.style.animation = '';
-      badge('✓ Noticias actualizadas');
-      if (window.initCarouselArrows) window.initCarouselArrows();
-      if (window.initScrollReveal) window.initScrollReveal();
+      badge('✓ Noticias cargadas');
 
-      // Titular en ticker con primeras noticias
-      var track = document.getElementById('tickerTrack');
-      if (track) {
-        var todas = [];
-        ['genero','politica','ddhh','ambiente','investigacion'].forEach(function(k) {
-          var arts = data.categorias[k] || [];
-          arts.slice(0,2).forEach(function(a) { todas.push({txt: a.titulo, sec: k === 'investigacion' ? 'page-investigacion' : 'page-' + k}); });
-        });
-        track.innerHTML = '';
-        todas.concat(todas).forEach(function(item) {
-          var sp = document.createElement('span');
-          sp.className = 'ticker-item';
-          sp.style.color = '#fff';
-          sp.textContent = '● ' + item.txt;
-          sp.setAttribute('data-sec', item.sec);
-          sp.onclick = function() { if (window.showSection) showSection(this.getAttribute('data-sec')); };
-          var sep = document.createElement('span');
-          sep.className = 'ticker-sep';
-          sep.style.cssText = 'color:rgba(255,255,255,.4);padding-right:48px;font-size:16px';
-          sep.textContent = '◆';
-          track.appendChild(sp);
-          track.appendChild(sep);
-        });
-      }
+      // FASE 2 — en segundo plano, sumar el RSS de medios y volver a pintar sin skeleton
+      cargarJSON().then(function(fullData) {
+        renderData(fullData, '✓ Noticias actualizadas (panel + medios)');
+        badge('✓ Noticias completas');
+      }).catch(function() {
+        // Si el RSS falla, no pasa nada: ya se ve el contenido del panel + respaldo
+      });
     }).catch(function(e) {
-      console.error('[Rabiozas] Error cargando noticias.json:', e);
-      setStatus('⚠ No se pudo conectar con el panel de noticias — verifica tu conexión');
+      console.error('[Rabiozas] Error cargando el panel de noticias:', e);
+      // Aunque falle el Sheet, mostramos contenido de respaldo para que nada se vea vacío
+      var vacio = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
+      renderData(vacio, '⚠ Sin conexión al panel — mostrando contenido de referencia');
       if (btn) btn.style.animation = '';
     });
   }
