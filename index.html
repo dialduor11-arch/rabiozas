@@ -1,4 +1,4 @@
-<!-- RABIOZAS BUILD: 2026-06-26 18:29:19 | Solo noticias con imagen + sin imagenes repetidas + carga instantanea -->
+<!-- RABIOZAS BUILD: 2026-06-26 19:00:26 | RSS con doble proveedor (mas confiable) + respaldo sin repeticion -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -487,11 +487,6 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
   <span class="ticker-time" id="tickerTime"></span>
   <button class="ticker-refresh-right" id="tickerRefreshBtn" onclick="refreshTickers && refreshTickers()" title="Actualizar">↻ <span class="refresh-label">ACTUALIZAR</span></button>
 </div>
-<div id="update-status-bar" style="background:#f5f3ff;border-bottom:1px solid #e9d5ff;padding:4px 24px;display:flex;align-items:center;justify-content:space-between;font-family:'Poppins',sans-serif;font-size:11px;color:#7C3AED">
-  <span id="update-status-text">🔄 Cargando noticias en tiempo real de medios LATAM...</span>
-  <button onclick="RABIOZAS_NEWS.updateAll()" style="background:transparent;border:none;color:#7C3AED;font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px">↻ ACTUALIZAR TODO</button>
-</div>
-
 <!-- ====== INICIO ====== -->
 <div id="page-inicio" class="page active">
 <main class="main-wrapper">
@@ -1879,41 +1874,78 @@ var RABIOZAS_NEWS = (function() {
     ]
   };
 
-  function fetchRSSForCategory(catKey, maxItems) {
-    var feeds = RSS_FEEDS[catKey] || [];
-    var promesas = feeds.map(function(feed) {
-      var apiUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed.url);
+  function fetchOneFeed(feedUrl, medio, maxItems) {
+    function intentarConProveedor(apiUrl, esXmlCrudo) {
       var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-      var timeoutId = controller ? setTimeout(function(){ controller.abort(); }, 4000) : null;
+      var timeoutId = controller ? setTimeout(function(){ controller.abort(); }, 5000) : null;
 
       return fetch(apiUrl, controller ? { signal: controller.signal } : {})
         .then(function(r) {
           if (timeoutId) clearTimeout(timeoutId);
-          return r.json();
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return esXmlCrudo ? r.text() : r.json();
         })
         .then(function(data) {
-          if (!data.items) return [];
-          return data.items.slice(0, (maxItems || 4) * 2).map(function(item) {
-            var imgMatch = (item.content || '').match(/<img[^>]+src=["']([^"']+)["']/);
+          var items;
+          if (esXmlCrudo) {
+            // Respuesta de allorigins: texto XML crudo del RSS, lo parseamos a mano
+            var parser = new DOMParser();
+            var xml = parser.parseFromString(data, 'text/xml');
+            var nodes = xml.querySelectorAll('item');
+            items = Array.prototype.slice.call(nodes).map(function(node) {
+              function txt(tag) { var el = node.querySelector(tag); return el ? el.textContent : ''; }
+              var enclosure = node.querySelector('enclosure');
+              var mediaContent = node.getElementsByTagNameNS('*', 'content')[0];
+              return {
+                title: txt('title'),
+                description: txt('description'),
+                content: txt('description'),
+                pubDate: txt('pubDate'),
+                link: txt('link'),
+                thumbnail: enclosure ? enclosure.getAttribute('url') : (mediaContent ? mediaContent.getAttribute('url') : '')
+              };
+            });
+          } else {
+            items = data.items || [];
+          }
+          if (!items.length) throw new Error('Feed vacío');
+
+          return items.slice(0, (maxItems || 4) * 2).map(function(item) {
+            var imgMatch = (item.content || item.description || '').match(/<img[^>]+src=["']([^"']+)["']/);
             var imagen = (item.thumbnail && item.thumbnail.indexOf('http') === 0) ? item.thumbnail
                        : (imgMatch ? imgMatch[1] : '');
             return {
               titulo: item.title || '',
               descripcion: (item.description || '').replace(/<[^>]+>/g, '').slice(0, 200),
               cuerpo: item.content || item.description || '',
-              autor: item.author || feed.medio,
+              autor: item.author || medio,
               fecha: item.pubDate || new Date().toISOString(),
               imagen: imagen,
-              fuente: feed.medio,
+              fuente: medio,
               url: item.link || '',
               propio: false,
               destacado: false
             };
           })
-          .filter(function(art) { return art.imagen; }) // solo noticias con imagen real
+          .filter(function(art) { return art.imagen; })
           .slice(0, maxItems || 4);
-        })
-        .catch(function() { return []; }); // si un feed falla o tarda mucho, seguimos con los demás
+        });
+    }
+
+    var urlPrimaria = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl);
+    var urlRespaldo = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(feedUrl);
+
+    return intentarConProveedor(urlPrimaria, false)
+      .catch(function() {
+        // Si rss2json falla o está limitado, probamos con el proxy de respaldo
+        return intentarConProveedor(urlRespaldo, true).catch(function() { return []; });
+      });
+  }
+
+  function fetchRSSForCategory(catKey, maxItems) {
+    var feeds = RSS_FEEDS[catKey] || [];
+    var promesas = feeds.map(function(feed) {
+      return fetchOneFeed(feed.url, feed.medio, maxItems);
     });
     return Promise.all(promesas).then(function(arrays) {
       var combinadas = arrays.reduce(function(a, b) { return a.concat(b); }, []);
@@ -2287,22 +2319,38 @@ var RABIOZAS_NEWS = (function() {
   var FALLBACK_CONTENT = {
     genero: [
       { titulo: 'La brecha salarial de género sigue siendo una deuda pendiente en América Latina', descripcion: 'Estudios de la OIT muestran que las mujeres latinoamericanas ganan en promedio 17% menos que los hombres en puestos equivalentes.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
-      { titulo: 'El trabajo de cuidado no remunerado: la economía invisible que sostiene los hogares', descripcion: 'Las mujeres dedican en promedio 3 veces más horas al trabajo doméstico no pagado que los hombres en la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+      { titulo: 'El trabajo de cuidado no remunerado: la economía invisible que sostiene los hogares', descripcion: 'Las mujeres dedican en promedio 3 veces más horas al trabajo doméstico no pagado que los hombres en la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Violencia de género: las cifras que la región sigue sin lograr reducir', descripcion: 'A pesar de las leyes y campañas, los feminicidios se mantienen en niveles alarmantes en gran parte de América Latina.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Educación con enfoque de género: el camino que falta recorrer en las aulas', descripcion: 'Especialistas señalan que la formación docente sigue siendo clave para transformar estereotipos desde la infancia.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Mujeres en la economía informal: la cara invisible del trabajo en la región', descripcion: 'Millones de mujeres latinoamericanas sostienen sus hogares desde la informalidad, sin acceso a seguridad social.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
     ],
     ambiente: [
       { titulo: 'Mujeres rurales, primeras afectadas por la crisis climática en la región', descripcion: 'Sequías e inundaciones golpean con más fuerza a comunidades donde las mujeres sostienen la producción de alimentos.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
-      { titulo: 'Líderes ambientales: el riesgo de defender el territorio en América Latina', descripcion: 'La región sigue siendo la más peligrosa del mundo para quienes defienden la tierra y el medio ambiente.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+      { titulo: 'Líderes ambientales: el riesgo de defender el territorio en América Latina', descripcion: 'La región sigue siendo la más peligrosa del mundo para quienes defienden la tierra y el medio ambiente.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Comunidades indígenas y la defensa del agua frente a la industria extractiva', descripcion: 'Pueblos originarios lideran la resistencia frente a proyectos que amenazan fuentes de agua en distintos países.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Energías renovables: el rol de las mujeres en la transición energética', descripcion: 'Iniciativas comunitarias en la región muestran cómo las mujeres impulsan proyectos solares y eólicos locales.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Deforestación en la Amazonía: lo que revelan los últimos datos satelitales', descripcion: 'Organizaciones ambientales alertan sobre el avance de la pérdida de bosque en zonas protegidas de la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
     ],
     politica: [
       { titulo: 'La representación política de las mujeres avanza, pero el poder real sigue concentrado', descripcion: 'Aunque hay más mujeres en cargos de elección, los espacios de decisión real siguen mayoritariamente masculinos.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
-      { titulo: 'Paridad de género en la política: lo que falta para una representación real', descripcion: 'Las leyes de paridad avanzan en la región, pero su implementación sigue siendo desigual entre países.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+      { titulo: 'Paridad de género en la política: lo que falta para una representación real', descripcion: 'Las leyes de paridad avanzan en la región, pero su implementación sigue siendo desigual entre países.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Violencia política contra las mujeres: un obstáculo que persiste en la región', descripcion: 'Candidatas y funcionarias siguen enfrentando amenazas y discursos de odio en distintos procesos electorales.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Movimientos sociales y su influencia en las agendas legislativas actuales', descripcion: 'Organizaciones feministas han logrado incidir en debates clave dentro de varios congresos de la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Gobiernos locales: el espacio donde más crece el liderazgo femenino', descripcion: 'Alcaldías y concejos municipales muestran un crecimiento sostenido de mujeres en cargos de decisión.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
     ],
     ddhh: [
       { titulo: 'Defensoras de derechos humanos: la violencia que enfrentan por su labor', descripcion: 'Organizaciones de la región documentan un aumento sostenido de amenazas contra mujeres defensoras de derechos humanos.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
-      { titulo: 'Acceso a la justicia para mujeres víctimas de violencia: las barreras que persisten', descripcion: 'Pese a avances legales, miles de mujeres siguen enfrentando obstáculos para acceder a la justicia en la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+      { titulo: 'Acceso a la justicia para mujeres víctimas de violencia: las barreras que persisten', descripcion: 'Pese a avances legales, miles de mujeres siguen enfrentando obstáculos para acceder a la justicia en la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Migración femenina: los riesgos invisibles en las rutas migratorias', descripcion: 'Mujeres migrantes enfrentan violencia y explotación durante sus trayectos por distintos países de la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Pueblos indígenas y el derecho a la consulta previa: avances y retrocesos', descripcion: 'Comunidades originarias continúan exigiendo que se respete su derecho a decidir sobre sus territorios.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Libertad de prensa: los riesgos que enfrentan las periodistas en la región', descripcion: 'Organizaciones internacionales reportan un aumento de agresiones contra mujeres periodistas en América Latina.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
     ],
     investigacion: [
-      { titulo: 'Investigación: el costo real de la violencia de género en cifras', descripcion: 'Un análisis de datos públicos revela el impacto económico y social de la violencia de género en la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+      { titulo: 'Investigación: el costo real de la violencia de género en cifras', descripcion: 'Un análisis de datos públicos revela el impacto económico y social de la violencia de género en la región.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Los fondos públicos destinados a políticas de género: ¿a dónde van realmente?', descripcion: 'Una revisión de presupuestos públicos muestra brechas entre lo asignado y lo efectivamente ejecutado.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Trata de personas: las rutas y redes que operan en silencio en la región', descripcion: 'Una investigación documenta cómo operan las redes de trata que afectan principalmente a mujeres y niñas.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Salud reproductiva: el acceso desigual a servicios básicos en zonas rurales', descripcion: 'Datos oficiales revelan brechas significativas en el acceso a salud reproductiva entre zonas urbanas y rurales.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'El negocio detrás de la desinformación de género en redes sociales', descripcion: 'Una investigación rastrea el origen de campañas de desinformación dirigidas contra movimientos feministas.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
     ]
   };
 
@@ -2311,7 +2359,7 @@ var RABIOZAS_NEWS = (function() {
     var base = pool[idx % pool.length];
     return {
       titulo: base.titulo, descripcion: base.descripcion, cuerpo: '',
-      autor: base.autor, fecha: new Date().toISOString(), imagen: '',
+      autor: base.autor, fecha: new Date(Date.now() - idx * 3600000).toISOString(), imagen: '',
       fuente: base.fuente, url: '', propio: true, destacado: false
     };
   }
