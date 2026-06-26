@@ -2638,37 +2638,61 @@ var RABIOZAS_NEWS = (function() {
     }
   }
 
+  // ── Cache local: pinta al instante en visitas siguientes mientras llega la red ──
+  var CACHE_KEY = 'rabiozas_news_cache_v1';
+
+  function guardarCache(data) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (e) { /* localStorage lleno o bloqueado: se ignora */ }
+  }
+
+  function leerCache() {
+    try {
+      var raw = localStorage.getItem(CACHE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
   function updateAll() {
     var btn = document.getElementById('globalRefreshBtn');
     if (btn) btn.style.animation = 'spin 1s linear infinite';
     setStatus('🔄 Cargando noticias...');
 
-    // Mostrar contenido de respaldo REAL de inmediato (no un skeleton gris),
-    // así la página nunca se ve vacía ni "esperando" mientras llega la red.
-    if (!DATA) {
+    // FASE 0 — si hay una versión guardada de una visita anterior, pintarla YA
+    // (instantáneo, sin esperar red) mientras llegan los datos frescos.
+    var cache = leerCache();
+    if (cache) {
+      renderData(cache, '⏱ Última versión guardada, actualizando…');
+    } else if (!DATA) {
+      // Sin caché ni datos: mostrar el armazón vacío en vez de dejar la página en blanco
       var datosInstantaneos = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
       Object.keys(CATS).forEach(function(key) { updateCat(key, datosInstantaneos); });
       populateHeroAndSidebar(datosInstantaneos);
     }
 
-    // FASE 1 — render inmediato con lo que ya hay en el panel (rápido, sin esperar RSS)
+    // FASE 1 — render con lo que ya hay en el panel (rápido, sin esperar RSS)
     cargarSheetRapido().then(function(baseData) {
       renderData(baseData, '✓ Noticias del panel cargadas');
+      guardarCache(baseData);
       if (btn) btn.style.animation = '';
       badge('✓ Noticias cargadas');
 
       // FASE 2 — en segundo plano, sumar el RSS de medios y volver a pintar sin skeleton
       cargarJSON().then(function(fullData) {
         renderData(fullData, '✓ Noticias actualizadas (panel + medios)');
+        guardarCache(fullData);
         badge('✓ Noticias completas');
       }).catch(function() {
         // Si el RSS falla, no pasa nada: ya se ve el contenido del panel + respaldo
       });
     }).catch(function(e) {
       console.error('[Rabiozas] Error cargando el panel de noticias:', e);
-      // Aunque falle el Sheet, mostramos contenido de respaldo para que nada se vea vacío
-      var vacio = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
-      renderData(vacio, '⚠ Sin conexión al panel — mostrando contenido de referencia');
+      // Aunque falle el Sheet, si había caché ya se está viendo; si no, mostramos respaldo
+      if (!cache) {
+        var vacio = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
+        renderData(vacio, '⚠ Sin conexión al panel — mostrando contenido de referencia');
+      } else {
+        setStatus('⚠ Sin conexión al panel — mostrando última versión guardada');
+      }
       if (btn) btn.style.animation = '';
     });
   }
