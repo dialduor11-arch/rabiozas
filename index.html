@@ -1974,13 +1974,15 @@ var RABIOZAS_NEWS = (function() {
         (raw.noticias || []).forEach(function(row) {
           var cat = (row.Categoria || '').toLowerCase().trim();
           if (!categorias[cat]) return; // categoría desconocida (ej: podcast, opinion), se ignora aquí
+          var imagenURL = (row.ImagenURL || '').trim();
+          if (!imagenURL) return; // sin imagen: se omite, aunque sea la más reciente
           categorias[cat].push({
             titulo:      row.Titulo || '',
             descripcion: row.Resumen || '',
             cuerpo:      row.Cuerpo || '',
             autor:       row.Autor || 'Equipo Rabiozas',
             fecha:       row.Fecha || new Date().toISOString(),
-            imagen:      row.ImagenURL || '',
+            imagen:      imagenURL,
             fuente:      row.Fuente || 'Rabiozas',
             url:         '',
             propio:      true,
@@ -1995,26 +1997,31 @@ var RABIOZAS_NEWS = (function() {
       });
   }
 
-  // ── Carga completa: Sheet + RSS mezclados (puede tardar más) ─────────
-  function cargarJSON() {
+  // ── Carga completa: Sheet + RSS EN PARALELO (antes uno esperaba al otro) ──
+  function cargarJSON(sheetPromiseExistente) {
     if (DATA) return Promise.resolve(DATA);
 
-    return cargarSheetRapido().then(function(base) {
-      var catKeys = Object.keys(base.categorias);
-      return Promise.all(catKeys.map(function(k) { return fetchRSSForCategory(k); }))
-        .then(function(rssResults) {
-          catKeys.forEach(function(k, idx) {
-            base.categorias[k] = base.categorias[k].concat(rssResults[idx]);
-            base.categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
-          });
-          DATA = base;
-          return base;
-        })
-        .catch(function() {
-          // Si el RSS falla por completo, nos quedamos con lo del panel
-          DATA = base;
-          return base;
-        });
+    var catKeys = Object.keys(RSS_FEEDS);
+
+    // Reutiliza la promesa del Sheet si ya se había lanzado (evita pedirlo 2 veces)
+    var sheetPromise = (sheetPromiseExistente || cargarSheetRapido()).catch(function() {
+      return { generado: new Date().toISOString(), categorias: {}, config: {} };
+    });
+    var rssPromise = Promise.all(catKeys.map(function(k) {
+      return fetchRSSForCategory(k).catch(function() { return []; });
+    }));
+
+    return Promise.all([sheetPromise, rssPromise]).then(function(results) {
+      var base = results[0];
+      var rssResults = results[1];
+      if (!base.categorias) base.categorias = {};
+      catKeys.forEach(function(k, idx) {
+        var propias = base.categorias[k] || [];
+        base.categorias[k] = propias.concat(rssResults[idx] || []);
+        base.categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+      });
+      DATA = base;
+      return base;
     });
   }
 
@@ -2411,9 +2418,8 @@ var RABIOZAS_NEWS = (function() {
     });
     todas.sort(function(a, b) { return new Date(b.art.fecha) - new Date(a.art.fecha); });
 
-    // HERO: la más reciente marcada como destacada; si no hay ninguna, la más reciente de todas
-    var destacadas = todas.filter(function(t) { return t.art.destacado; });
-    var heroPick = destacadas[0] || todas[0];
+    // HERO: siempre la noticia más reciente de todas (panel + medios)
+    var heroPick = todas[0];
 
     if (heroPick) {
       var cat = CATS[heroPick.catKey] || { label: 'Rabiozas' };
@@ -2657,41 +2663,53 @@ var RABIOZAS_NEWS = (function() {
     if (btn) btn.style.animation = 'spin 1s linear infinite';
     setStatus('🔄 Cargando noticias...');
 
+    // Olvida lo que había en memoria de esta sesión: cada llamada a updateAll()
+    // (botón ACTUALIZAR o auto-refresh) debe traer noticias frescas de verdad,
+    // no quedarse repitiendo siempre el primer resultado cargado.
+    DATA = null;
+
     // FASE 0 — si hay una versión guardada de una visita anterior, pintarla YA
     // (instantáneo, sin esperar red) mientras llegan los datos frescos.
     var cache = leerCache();
+    var sheetPromise = cargarSheetRapido(); // se lanza ya mismo, en paralelo con el RSS
+
     if (cache) {
+      // Ya hay algo completo (panel + medios) para mostrar de inmediato.
+      // NO pintamos primero "solo panel": eso era justo lo que causaba el
+      // salto/conflicto entre la noticia del panel y la del API.
       renderData(cache, '⏱ Última versión guardada, actualizando…');
-    } else if (!DATA) {
-      // Sin caché ni datos: mostrar el armazón vacío en vez de dejar la página en blanco
-      var datosInstantaneos = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
-      Object.keys(CATS).forEach(function(key) { updateCat(key, datosInstantaneos); });
-      populateHeroAndSidebar(datosInstantaneos);
+    } else {
+      if (!DATA) {
+        // Sin caché ni datos: mostrar el armazón vacío en vez de dejar la página en blanco
+        var datosInstantaneos = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
+        Object.keys(CATS).forEach(function(key) { updateCat(key, datosInstantaneos); });
+        populateHeroAndSidebar(datosInstantaneos);
+      }
+      // Solo en la primera visita (sin caché) mostramos el panel en cuanto llegue,
+      // porque no hay nada mejor para mostrar mientras se completa el API.
+      sheetPromise.then(function(baseData) {
+        renderData(baseData, '✓ Noticias del panel cargadas');
+        badge('✓ Noticias cargadas');
+      }).catch(function() {});
     }
 
-    // FASE 1 — render con lo que ya hay en el panel (rápido, sin esperar RSS)
-    cargarSheetRapido().then(function(baseData) {
-      renderData(baseData, '✓ Noticias del panel cargadas');
-      guardarCache(baseData);
+    // FASE ÚNICA — panel + API en PARALELO (ya no uno detrás del otro).
+    // El resultado combinado es la única fuente de verdad para el hero:
+    // siempre gana la noticia más reciente entre panel y medios, y solo
+    // se pinta una vez (sin la doble actualización de antes).
+    cargarJSON(sheetPromise).then(function(fullData) {
+      renderData(fullData, '✓ Noticias actualizadas (panel + medios)');
+      guardarCache(fullData);
       if (btn) btn.style.animation = '';
-      badge('✓ Noticias cargadas');
-
-      // FASE 2 — en segundo plano, sumar el RSS de medios y volver a pintar sin skeleton
-      cargarJSON().then(function(fullData) {
-        renderData(fullData, '✓ Noticias actualizadas (panel + medios)');
-        guardarCache(fullData);
-        badge('✓ Noticias completas');
-      }).catch(function() {
-        // Si el RSS falla, no pasa nada: ya se ve el contenido del panel + respaldo
-      });
+      badge('✓ Noticias completas');
     }).catch(function(e) {
-      console.error('[Rabiozas] Error cargando el panel de noticias:', e);
-      // Aunque falle el Sheet, si había caché ya se está viendo; si no, mostramos respaldo
+      console.error('[Rabiozas] Error cargando noticias:', e);
+      // Aunque falle todo, si había caché ya se está viendo; si no, mostramos respaldo
       if (!cache) {
         var vacio = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
-        renderData(vacio, '⚠ Sin conexión al panel — mostrando contenido de referencia');
+        renderData(vacio, '⚠ Sin conexión — mostrando contenido de referencia');
       } else {
-        setStatus('⚠ Sin conexión al panel — mostrando última versión guardada');
+        setStatus('⚠ Sin conexión — mostrando última versión guardada');
       }
       if (btn) btn.style.animation = '';
     });
