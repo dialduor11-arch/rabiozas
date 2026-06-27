@@ -370,10 +370,10 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
 .wave-purple path{fill:#7C3AED}
 .wave-lime path{fill:#C1FF00}
 .page-transition-overlay.run .transition-wave{
-  animation:waveSweep 900ms cubic-bezier(.65,0,.35,1) forwards;
+  animation:waveSweep 450ms cubic-bezier(.65,0,.35,1) forwards;
 }
 .page-transition-overlay.run .wave-lime{
-  animation-delay:70ms;
+  animation-delay:30ms;
 }
 @keyframes waveSweep{
   0%{transform:translateY(-100%)}
@@ -1309,16 +1309,16 @@ function showSection(sec){
   window._waveTransitioning = true;
   overlay.classList.add('run');
 
-  // En el punto medio de la animación (~mitad de 900ms) la pantalla
-  // queda totalmente cubierta por la ola: ahí cambiamos el contenido.
+  // En el punto medio de la animación la pantalla queda totalmente
+  // cubierta por la ola: ahí cambiamos el contenido.
   setTimeout(function(){
     showSectionInner(sec);
-  }, 430);
+  }, 210);
 
   setTimeout(function(){
     overlay.classList.remove('run');
     window._waveTransitioning = false;
-  }, 950);
+  }, 470);
 }
 
 function showSectionInner(sec){
@@ -1959,6 +1959,52 @@ var RABIOZAS_NEWS = (function() {
     });
   }
 
+  // ── Validación real de imágenes: a veces el campo ImagenURL tiene algo
+  // (un link roto, un Drive sin permisos públicos, etc.) que nunca carga.
+  // Probamos cada imagen de verdad y solo dejamos pasar las que sí cargan.
+  function imagenCarga(url, timeoutMs) {
+    return new Promise(function(resolve) {
+      if (!url) { resolve(false); return; }
+      var img = new Image();
+      var listo = false;
+      var t = setTimeout(function() {
+        if (listo) return;
+        listo = true;
+        resolve(false);
+      }, timeoutMs || 4000);
+      img.onload = function() {
+        if (listo) return;
+        listo = true;
+        clearTimeout(t);
+        // naturalWidth 0 también pasa en algunos SVG/placeholder rotos disfrazados de "éxito"
+        resolve(img.naturalWidth > 0);
+      };
+      img.onerror = function() {
+        if (listo) return;
+        listo = true;
+        clearTimeout(t);
+        resolve(false);
+      };
+      img.src = url;
+    });
+  }
+
+  function filtrarConImagenValida(categorias) {
+    var tareas = [];
+    Object.keys(categorias).forEach(function(k) {
+      (categorias[k] || []).forEach(function(art) {
+        tareas.push(imagenCarga(art.imagen).then(function(ok) { art._imgOk = ok; }));
+      });
+    });
+    return Promise.all(tareas).then(function() {
+      var resultado = {};
+      Object.keys(categorias).forEach(function(k) {
+        resultado[k] = (categorias[k] || []).filter(function(art) { return art._imgOk; });
+      });
+      return resultado;
+    });
+  }
+
   // ── Carga noticias del panel (Sheet) + RSS de medios, mezcladas por fecha ──
   // ── Carga rápida: solo el Sheet (panel admin), sin esperar al RSS ────
   function cargarSheetRapido() {
@@ -1993,7 +2039,10 @@ var RABIOZAS_NEWS = (function() {
           categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
         });
 
-        return { generado: new Date().toISOString(), categorias: categorias, config: raw.config || {} };
+        // Probamos que cada imagen cargue de verdad antes de mostrar la noticia
+        return filtrarConImagenValida(categorias).then(function(categoriasValidas) {
+          return { generado: new Date().toISOString(), categorias: categoriasValidas, config: raw.config || {} };
+        });
       });
   }
 
@@ -2020,8 +2069,13 @@ var RABIOZAS_NEWS = (function() {
         base.categorias[k] = propias.concat(rssResults[idx] || []);
         base.categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
       });
-      DATA = base;
-      return base;
+      // El Sheet ya viene validado; aquí validamos también lo del RSS recién
+      // sumado, para que la mezcla final tampoco tenga imágenes rotas.
+      return filtrarConImagenValida(base.categorias).then(function(categoriasValidas) {
+        base.categorias = categoriasValidas;
+        DATA = base;
+        return base;
+      });
     });
   }
 
