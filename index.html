@@ -2358,6 +2358,11 @@ var RABIOZAS_NEWS = (function() {
     document.body.style.overflow = 'hidden';
   }
 
+  // El hero usa un onclick="" en el HTML estático, que se ejecuta en el
+  // scope global (no dentro de este módulo) — por eso necesita esta
+  // referencia en window para poder encontrar la función.
+  window.abrirArticulo = abrirArticulo;
+
   // ── Skeleton ─────────────────────────────────────────────────────────
   function skeleton(grid, n, isInv) {
     var pulse = 'background:linear-gradient(90deg,#f0ebff 25%,#e9d5ff 50%,#f0ebff 75%);background-size:400% 100%;animation:shimmer 1.5s infinite';
