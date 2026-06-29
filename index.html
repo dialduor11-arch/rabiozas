@@ -1877,7 +1877,7 @@ var RABIOZAS_NEWS = (function() {
   function fetchOneFeed(feedUrl, medio, maxItems) {
     function intentarConProveedor(apiUrl, esXmlCrudo) {
       var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-      var timeoutId = controller ? setTimeout(function(){ controller.abort(); }, 5000) : null;
+      var timeoutId = controller ? setTimeout(function(){ controller.abort(); }, 7000) : null;
 
       return fetch(apiUrl, controller ? { signal: controller.signal } : {})
         .then(function(r) {
@@ -2056,17 +2056,35 @@ var RABIOZAS_NEWS = (function() {
     var sheetPromise = (sheetPromiseExistente || cargarSheetRapido()).catch(function() {
       return { generado: new Date().toISOString(), categorias: {}, config: {} };
     });
-    var rssPromise = Promise.all(catKeys.map(function(k) {
-      return fetchRSSForCategory(k).catch(function() { return []; });
+
+    // Escalonamos el inicio de cada categoría (350ms de diferencia entre una y otra)
+    // para no disparar las 10 peticiones RSS (5 categorías × 2 medios) al mismo
+    // instante: los proxies gratuitos (rss2json/allorigins) tienen límite de uso
+    // y, si llegan todas juntas, algunas se caen al azar — por eso a veces carga
+    // Género, otras Ambiente, pero no todas a la vez.
+    var rssPromise = Promise.all(catKeys.map(function(k, idx) {
+      return new Promise(function(resolve) {
+        setTimeout(function() {
+          fetchRSSForCategory(k).then(resolve).catch(function() { resolve([]); });
+        }, idx * 350);
+      });
     }));
 
     return Promise.all([sheetPromise, rssPromise]).then(function(results) {
       var base = results[0];
       var rssResults = results[1];
       if (!base.categorias) base.categorias = {};
+      // Si esta ronda alguna categoría no trajo nada del API, no la dejamos en
+      // blanco: rescatamos lo último que sí cargó bien (guardado en caché) para
+      // que una falla pasajera de un proxy no borre contenido que ya se había visto.
+      var cachePrevio = leerCache();
       catKeys.forEach(function(k, idx) {
         var propias = base.categorias[k] || [];
-        base.categorias[k] = propias.concat(rssResults[idx] || []);
+        var deAPI = rssResults[idx] || [];
+        if (!deAPI.length && cachePrevio && cachePrevio.categorias && cachePrevio.categorias[k]) {
+          deAPI = cachePrevio.categorias[k].filter(function(a) { return !a.propio; });
+        }
+        base.categorias[k] = propias.concat(deAPI);
         base.categorias[k].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
       });
       // El Sheet ya viene validado; aquí validamos también lo del RSS recién
