@@ -778,6 +778,10 @@ function loadElMedio() {
   fetchConfig().then(function(cfg) {
     container.innerHTML = '';
     EL_MEDIO_DEFAULTS.forEach(function(item, idx) {
+      if (idx === 1) {
+        container.appendChild(buildTeamSection(cfg, item));
+        return;
+      }
       const wrap = document.createElement('div');
       wrap.style.cssText = 'border:1px solid var(--pl);border-radius:10px;padding:14px;margin-bottom:14px';
 
@@ -879,9 +883,209 @@ function handleMedioImgUpload(e, idx) {
   reader.readAsDataURL(file);
 }
 
+/* ---- Nuestro equipo: perfiles individuales (nombre, cargo, descripción, foto) ---- */
+let teamMembers = [];
+let teamMembersContainerEl = null;
+
+function buildTeamSection(cfg, item) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'border:1px solid var(--pl);border-radius:10px;padding:14px;margin-bottom:14px';
+
+  const label = document.createElement('label');
+  label.textContent = item.titulo;
+  label.style.marginTop = '0';
+  wrap.appendChild(label);
+
+  const titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.id = 'medio_titulo_1';
+  titleInput.value = cfg['medio_titulo_1'] || item.titulo;
+  titleInput.placeholder = 'Título del apartado';
+  titleInput.style.marginBottom = '10px';
+  wrap.appendChild(titleInput);
+
+  const introTextarea = document.createElement('textarea');
+  introTextarea.id = 'medio_contenido_1';
+  introTextarea.value = cfg['medio_contenido_1'] || '';
+  introTextarea.placeholder = 'Texto introductorio opcional (aparece antes de los perfiles del equipo)';
+  introTextarea.style.minHeight = '70px';
+  wrap.appendChild(introTextarea);
+
+  const membersLabel = document.createElement('label');
+  membersLabel.textContent = 'Perfiles del equipo';
+  wrap.appendChild(membersLabel);
+
+  const membersContainer = document.createElement('div');
+  membersContainer.id = 'teamMembersContainer';
+  wrap.appendChild(membersContainer);
+  teamMembersContainerEl = membersContainer;
+
+  try {
+    teamMembers = JSON.parse(cfg.equipo_json || '[]');
+    if (!Array.isArray(teamMembers)) teamMembers = [];
+  } catch (e) {
+    teamMembers = [];
+  }
+
+  renderTeamMembers();
+
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.textContent = '+ Agregar persona';
+  addBtn.style.cssText = 'margin-top:4px;background:var(--pll);border:1.5px dashed var(--pm);color:var(--pm);border-radius:10px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;width:100%';
+  addBtn.onclick = function () {
+    teamMembers.push({ nombre: '', cargo: '', descripcion: '', foto: '' });
+    renderTeamMembers();
+  };
+  wrap.appendChild(addBtn);
+
+  return wrap;
+}
+
+function renderTeamMembers() {
+  const container = teamMembersContainerEl;
+  if (!container) return;
+  container.innerHTML = '';
+  if (teamMembers.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.innerHTML = '<span>👥</span>Aún no hay miembros del equipo. Agrega el primero.';
+    container.appendChild(empty);
+    return;
+  }
+  teamMembers.forEach(function (m, idx) {
+    container.appendChild(buildMemberCard(m, idx));
+  });
+}
+
+function buildMemberCard(m, idx) {
+  const card = document.createElement('div');
+  card.style.cssText = 'border:1px solid var(--pl);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--pll)';
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.value = m.nombre || '';
+  nameInput.placeholder = 'Nombre';
+  nameInput.oninput = function () { teamMembers[idx].nombre = this.value; };
+
+  const roleInput = document.createElement('input');
+  roleInput.type = 'text';
+  roleInput.value = m.cargo || '';
+  roleInput.placeholder = 'Cargo (ej: Directora editorial)';
+  roleInput.style.marginTop = '8px';
+  roleInput.oninput = function () { teamMembers[idx].cargo = this.value; };
+
+  const descInput = document.createElement('textarea');
+  descInput.value = m.descripcion || '';
+  descInput.placeholder = 'Descripción breve (opcional)';
+  descInput.style.minHeight = '60px';
+  descInput.style.marginTop = '8px';
+  descInput.oninput = function () { teamMembers[idx].descripcion = this.value; };
+
+  const imgZone = document.createElement('div');
+  imgZone.className = 'img-zone';
+  imgZone.style.padding = '14px';
+  imgZone.style.marginTop = '8px';
+  imgZone.onclick = function () { fileInput.click(); };
+
+  const existingImg = m.foto || '';
+  const placeholder = document.createElement('div');
+  placeholder.className = 'placeholder';
+  placeholder.innerHTML = '<span>📷</span>Clic para subir una foto (opcional)';
+  placeholder.style.display = existingImg ? 'none' : 'block';
+
+  const preview = document.createElement('img');
+  preview.style.maxHeight = '140px';
+  preview.style.display = existingImg ? 'block' : 'none';
+  if (existingImg) preview.src = existingImg;
+
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+  fileInput.onchange = function (e) { handleMemberImgUpload(e, idx, preview, placeholder, imgZone, urlFallback); };
+
+  imgZone.appendChild(placeholder);
+  imgZone.appendChild(preview);
+  if (existingImg) imgZone.classList.add('has-img');
+
+  const urlFallback = document.createElement('input');
+  urlFallback.type = 'url';
+  urlFallback.value = (existingImg && !existingImg.startsWith('data:')) ? existingImg : '';
+  urlFallback.placeholder = 'https://... (opcional, link directo a una foto)';
+  urlFallback.style.marginTop = '8px';
+  urlFallback.oninput = function () { teamMembers[idx].foto = this.value.trim(); };
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.textContent = '✕ Eliminar';
+  removeBtn.style.cssText = 'margin-top:10px;background:transparent;border:1.5px solid #dc2626;color:#dc2626;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit';
+  removeBtn.onclick = function () {
+    teamMembers.splice(idx, 1);
+    renderTeamMembers();
+  };
+
+  card.appendChild(nameInput);
+  card.appendChild(roleInput);
+  card.appendChild(descInput);
+  card.appendChild(imgZone);
+  card.appendChild(fileInput);
+  card.appendChild(urlFallback);
+  card.appendChild(removeBtn);
+
+  return card;
+}
+
+function handleMemberImgUpload(e, idx, preview, placeholder, imgZone, urlFallback) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (ev) {
+    const img = new Image();
+    img.onload = function () {
+      const MAX_WIDTH = 500;
+      let { width, height } = img;
+      if (width > MAX_WIDTH) {
+        height = Math.round(height * (MAX_WIDTH / width));
+        width = MAX_WIDTH;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      teamMembers[idx].foto = dataUrl;
+      preview.src = dataUrl;
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
+      imgZone.classList.add('has-img');
+      urlFallback.value = '';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function saveElMedio() {
   const config = {};
   EL_MEDIO_DEFAULTS.forEach(function(item, idx) {
+    if (idx === 1) {
+      config['medio_titulo_1'] = document.getElementById('medio_titulo_1').value.trim();
+      config['medio_contenido_1'] = document.getElementById('medio_contenido_1').value.trim();
+      const cleanMembers = teamMembers
+        .filter(function (m) { return (m.nombre || '').trim() || (m.cargo || '').trim(); })
+        .map(function (m) {
+          return {
+            nombre: (m.nombre || '').trim(),
+            cargo: (m.cargo || '').trim(),
+            descripcion: (m.descripcion || '').trim(),
+            foto: (m.foto || '').trim()
+          };
+        });
+      config['equipo_json'] = JSON.stringify(cleanMembers);
+      return;
+    }
     config['medio_titulo_' + idx] = document.getElementById('medio_titulo_' + idx).value.trim();
     config['medio_contenido_' + idx] = document.getElementById('medio_contenido_' + idx).value.trim();
     const imgUrl = elMedioImages[idx] || document.getElementById('medio_imagen_url_' + idx).value.trim();
