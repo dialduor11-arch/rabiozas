@@ -222,7 +222,7 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
   scrollbar-width:none;
 }
 .opinion-grid::-webkit-scrollbar{display:none}
-.opinion-grid .opinion-card{flex:0 0 260px;scroll-snap-align:start}
+.opinion-grid .opinion-card, .opinion-grid .news-card{flex:0 0 260px;scroll-snap-align:start}
 .opinion-card{background:#fff;border-radius:var(--card-r);padding:16px;cursor:pointer;border:1px solid #f3f4f6;transition:box-shadow .2s}
 .opinion-card:hover{box-shadow:0 4px 16px rgba(124,58,237,.14)}
 .op-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;margin-bottom:10px}
@@ -368,7 +368,7 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
   .header-actions .btn-outline{display:none}
 }
 @media(max-width:480px){
-  .opinion-grid .opinion-card{flex:0 0 78vw}
+  .opinion-grid .opinion-card, .opinion-grid .news-card{flex:0 0 78vw}
 }
 
 /* BRAND BAR */
@@ -573,7 +573,7 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
   <div class="page-hero"><h1 style="color:var(--pm)">✍️ Opinión</h1><p style="border-left-color:var(--rm)">Voces diversas que analizan, cuestionan y proponen desde el feminismo y los derechos humanos.</p></div>
   <div class="news-carousel-wrap">
   <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-opinion-pagina',-1)" aria-label="Anterior">‹</button>
-  <div class="opinion-grid" id="grid-opinion-pagina">
+  <div class="opinion-grid" id="grid-opinion-pagina" onscroll="updateCarouselArrows('grid-opinion-pagina')">
     <div class="opinion-card" style="padding:20px" onclick="openArticle('op1')">
       <div class="op-avatar" style="background:var(--rm);width:54px;height:54px;font-size:18px;color:#7C3AED">MR</div>
       <div class="op-author" style="font-size:16px">María Rondón</div><div class="op-role">Abogada feminista, Sisma Mujer</div>
@@ -2826,7 +2826,7 @@ var RABIOZAS_NEWS = (function() {
     } else {
       if (!DATA) {
         // Sin caché ni datos: mostrar el armazón vacío en vez de dejar la página en blanco
-        var datosInstantaneos = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
+        var datosInstantaneos = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[], opinion:[] }, config: {} };
         Object.keys(CATS).forEach(function(key) { updateCat(key, datosInstantaneos); });
         populateHeroAndSidebar(datosInstantaneos);
       }
@@ -2851,7 +2851,7 @@ var RABIOZAS_NEWS = (function() {
       console.error('[Rabiozas] Error cargando noticias:', e);
       // Aunque falle todo, si había caché ya se está viendo; si no, mostramos respaldo
       if (!cache) {
-        var vacio = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] }, config: {} };
+        var vacio = { generado: new Date().toISOString(), categorias: { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[], opinion:[] }, config: {} };
         renderData(vacio, '⚠ Sin conexión — mostrando contenido de referencia');
       } else {
         setStatus('⚠ Sin conexión — mostrando última versión guardada');
