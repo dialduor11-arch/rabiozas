@@ -1898,7 +1898,8 @@ var RABIOZAS_NEWS = (function() {
     ambiente:      { label:'Ambiente',      tagBg:'bg-amb', tagText:'t-amb', icon:'🌿', grids:['grid-inicio-ambiente','grid-ambiente'],  inv:false },
     politica:      { label:'Política',      tagBg:'bg-pol', tagText:'t-pol', icon:'🏛', grids:['grid-inicio-politica','grid-politica'],  inv:false },
     ddhh:          { label:'DDHH',          tagBg:'bg-dh',  tagText:'t-dh',  icon:'⚖', grids:['grid-inicio-ddhh','grid-ddhh'],          inv:false },
-    investigacion: { label:'Investigación', tagBg:'bg-pol', tagText:'t-pol', icon:'🔍', grids:['grid-investigacion'],                    inv:true  }
+    investigacion: { label:'Investigación', tagBg:'bg-pol', tagText:'t-pol', icon:'🔍', grids:['grid-investigacion'],                    inv:true  },
+    opinion:       { label:'Opinión',       tagBg:'bg-fem', tagText:'t-fem', icon:'✍️', grids:['grid-opinion-pagina'],                   inv:false }
   };
 
   var DATA = null; // Cache de las noticias cargadas
@@ -1925,6 +1926,11 @@ var RABIOZAS_NEWS = (function() {
     investigacion: [
       { url: 'https://lasillavacia.com/feed', medio: 'La Silla Vacía' },
       { url: 'https://www.elespectador.com/investigacion/feed/', medio: 'El Espectador' }
+    ],
+    opinion: [
+      { url: 'https://www.elespectador.com/genero-y-diversidad/feed/', medio: 'El Espectador · Opinión' },
+      { url: 'https://volcanicas.com/feed/', medio: 'Volcánicas' },
+      { url: 'https://agenciapresentes.org/feed/', medio: 'Agencia Presentes' }
     ]
   };
 
@@ -2070,12 +2076,13 @@ var RABIOZAS_NEWS = (function() {
       .then(function(raw) {
         if (!raw.ok) throw new Error(raw.error || 'Error desconocido leyendo noticias');
 
-        var categorias = { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[] };
+        var categorias = { genero:[], ambiente:[], politica:[], ddhh:[], investigacion:[], opinion:[] };
         (raw.noticias || []).forEach(function(row) {
           var cat = (row.Categoria || '').toLowerCase().trim();
           if (!categorias[cat]) return; // categoría desconocida (ej: podcast, opinion), se ignora aquí
           var imagenURL = (row.ImagenURL || '').trim();
           if (!imagenURL) return; // sin imagen: se omite, aunque sea la más reciente
+          var urlOriginal = (row.UrlOriginal || '').trim();
           categorias[cat].push({
             titulo:      row.Titulo || '',
             descripcion: row.Resumen || '',
@@ -2084,8 +2091,8 @@ var RABIOZAS_NEWS = (function() {
             fecha:       row.Fecha || new Date().toISOString(),
             imagen:      imagenURL,
             fuente:      row.Fuente || 'Rabiozas',
-            url:         '',
-            propio:      true,
+            url:         urlOriginal,
+            propio:      !urlOriginal,
             destacado:   row.Destacado === 'SI'
           });
         });
@@ -2489,6 +2496,13 @@ var RABIOZAS_NEWS = (function() {
       { titulo: 'Trata de personas: las rutas y redes que operan en silencio en la región', descripcion: 'Una investigación documenta cómo operan las redes de trata que afectan principalmente a mujeres y niñas.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
       { titulo: 'Salud reproductiva: el acceso desigual a servicios básicos en zonas rurales', descripcion: 'Datos oficiales revelan brechas significativas en el acceso a salud reproductiva entre zonas urbanas y rurales.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
       { titulo: 'El negocio detrás de la desinformación de género en redes sociales', descripcion: 'Una investigación rastrea el origen de campañas de desinformación dirigidas contra movimientos feministas.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
+    ],
+    opinion: [
+      { titulo: 'El feminismo que no incomoda no sirve', descripcion: 'Una columna sobre los límites de un feminismo despolitizado y cómodo para el statu quo.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Cuidar no debería ser gratis: la deuda con las mujeres cuidadoras', descripcion: 'Una mirada crítica a por qué el trabajo de cuidado sigue sin reconocerse como trabajo real.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Lo personal sigue siendo político: notas sobre el cuerpo y el poder', descripcion: 'Una columna sobre cómo las decisiones sobre el propio cuerpo siguen disputándose en lo público.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'Masculinidades en crisis: ¿qué hacemos con la incomodidad de los hombres?', descripcion: 'Una reflexión sobre el lugar de las masculinidades en las conversaciones feministas actuales.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' },
+      { titulo: 'La violencia digital contra las mujeres también es violencia', descripcion: 'Una columna sobre el acoso en redes y la falta de respuestas institucionales reales.', fuente: 'Rabiozas', autor: 'Equipo Rabiozas' }
     ]
   };
 
