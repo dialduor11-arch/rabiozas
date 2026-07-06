@@ -162,6 +162,9 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
           </div>
         </div>
 
+        <label>URL de la fuente original (opcional)</label>
+        <input type="url" id="fUrlOriginal" placeholder="https://... (si el contenido viene de otro medio, pega aquí el link al artículo original)"/>
+
         <label>Imagen de la noticia</label>
         <div class="img-zone" id="imgZone" onclick="document.getElementById('imgFileInput').click()">
           <div class="placeholder" id="imgPlaceholder">
@@ -446,6 +449,7 @@ function clearForm() {
   document.getElementById('fCuerpo').value = '';
   document.getElementById('fAutor').value = 'Equipo Rabiozas';
   document.getElementById('fFuente').value = 'Rabiozas';
+  document.getElementById('fUrlOriginal').value = '';
   document.getElementById('fImagenUrl').value = '';
   document.getElementById('fDestacado').checked = false;
   document.getElementById('imgPreview').style.display = 'none';
@@ -503,6 +507,7 @@ function publishNews() {
     cuerpo: cuerpoHtml,
     autor: document.getElementById('fAutor').value.trim() || 'Equipo Rabiozas',
     fuente: opinionRole || document.getElementById('fFuente').value.trim() || 'Rabiozas',
+    urlOriginal: document.getElementById('fUrlOriginal').value.trim(),
     imagenUrl: imagenUrl,
     audioUrl: audioUrl,
     destacado: document.getElementById('fDestacado').checked
@@ -1217,6 +1222,7 @@ function editNews(n) {
   document.getElementById('fCuerpo').value = cuerpoText;
   document.getElementById('fAutor').value = n.Autor || 'Equipo Rabiozas';
   document.getElementById('fFuente').value = n.Fuente || 'Rabiozas';
+  document.getElementById('fUrlOriginal').value = n.UrlOriginal || '';
   document.getElementById('fImagenUrl').value = (n.ImagenURL && !n.ImagenURL.startsWith('data:')) ? n.ImagenURL : '';
   document.getElementById('fDestacado').checked = (n.Destacado === 'SI');
   document.getElementById('fAudioUrl').value = (n.AudioURL && !n.AudioURL.startsWith('data:')) ? n.AudioURL : '';
