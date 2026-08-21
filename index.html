@@ -130,6 +130,20 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
 .side-title{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;line-height:1.3;color:var(--bk);margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .side-time{font-size:11px;color:var(--gray)}
 
+/* INSTAGRAM EMBED (sidebar de Inicio) */
+.ig-embed-card{display:flex;flex-direction:column;height:100%;background:#fff;border-radius:var(--card-r);border:1px solid #f3f4f6;overflow:hidden}
+.ig-embed-header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #f3f4f6;flex-shrink:0}
+.ig-embed-icon{font-size:20px;flex-shrink:0}
+.ig-embed-title{font-family:'Poppins',sans-serif;font-weight:700;font-size:13px;color:var(--bk)}
+.ig-embed-sub{font-size:11px;color:var(--gray)}
+.ig-embed-follow{margin-left:auto;font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;color:#fff;background:var(--pm);padding:6px 14px;border-radius:20px;text-decoration:none;white-space:nowrap;flex-shrink:0}
+.ig-embed-follow:hover{opacity:.9}
+.ig-embed-frame-wrap{flex:1;min-height:280px;position:relative;background:#fafafa}
+.ig-embed-frame{position:absolute;inset:0;width:100%;height:100%;border:0}
+
+/* HOME: secciones apiladas debajo del hero (misma vista que cada pestaña) */
+.home-section{margin-bottom:8px}
+
 /* SECTION HEADERS */
 .sec-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
 .sec-line{flex:1;height:2px;background:var(--pl)}
@@ -549,7 +563,7 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
   <div class="hero-grid">
     <article class="hero-main" id="heroMainCard" onclick="if(window._heroArticle) abrirArticulo(window._heroArticle.art, window._heroArticle.catKey)">
       <div style="position:relative">
-        <img id="heroImg" style="width:100%;height:320px;object-fit:cover;display:block" src="" alt="" loading="eager" onerror="this.parentNode.style.background='linear-gradient(135deg,#4c1d95,#7c3aed,#C1FF00)'"/>
+        <img id="heroImg" style="width:100%;height:320px;object-fit:cover;object-position:top center;display:block" src="" alt="" loading="eager" onerror="this.parentNode.style.background='linear-gradient(135deg,#4c1d95,#7c3aed,#C1FF00)'"/>
       </div>
       <div class="hero-content">
         <span class="hero-tag" id="heroTag">Cargando...</span>
@@ -558,9 +572,373 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
       </div>
     </article>
     <div class="sidebar-articles" id="sidebarArticlesContainer">
-      <!-- Se rellena dinámicamente desde el panel admin -->
+      <div class="ig-embed-card">
+        <div class="ig-embed-header">
+          <span class="ig-embed-icon">📷</span>
+          <div>
+            <div class="ig-embed-title">@rabiozasmedio</div>
+            <div class="ig-embed-sub">Último post en Instagram</div>
+          </div>
+          <a class="ig-embed-follow" href="https://www.instagram.com/rabiozasmedio/" target="_blank" rel="noopener">Ver perfil</a>
+        </div>
+        <div class="ig-embed-frame-wrap">
+          <iframe class="ig-embed-frame" src="https://www.instagram.com/rabiozasmedio/embed" loading="lazy" scrolling="no" allowtransparency="true" title="Última publicación de Instagram de Rabiozas"></iframe>
+        </div>
+      </div>
     </div>
   </div>
+
+<div class="home-section" id="home-sec-genero">
+  <div class="page-hero"><h1 style="color:var(--pm)">✊ Feminismo</h1><p style="border-left-color:var(--rm)">Cubrimos los movimientos, luchas y victorias del feminismo latinoamericano con rigor y perspectiva de género.</p></div>
+  <div class="news-carousel-wrap">
+  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-inicio-genero',-1)" aria-label="Anterior">‹</button>
+  <div class="news-grid" id="grid-inicio-genero" onscroll="updateCarouselArrows('grid-inicio-genero')">
+    <article class="news-card" onclick="openArticle('f1')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://d1x0qnenkl91hi.cloudfront.net/uploads/COLP_318972_b1a10adfee.jpeg" alt="#NiUnaMenos: una década de lucha que cambió el continente — balance desde América Latina" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-fem">Género</span>
+        <h3 class="card-title">#NiUnaMenos: una década de lucha que cambió el continente — balance desde América Latina</h3>
+        <p class="card-excerpt">Activistas evaluaron avances y deudas pendientes del movimiento que transformó el debate sobre violencia de género.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#E2FF00;color:#7C3AED">LM</div>Laura Mendoza</div><span>hace 4h</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('f2')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&h=400&fit=crop&q=80" alt="Agenda Feminista 2026-2030: organizaciones construyen hoja de ruta para el próximo gobierno de Colombia" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-fem">Género</span>
+        <h3 class="card-title">Agenda Feminista 2026-2030: organizaciones construyen hoja de ruta para el próximo gobierno de Colombia</h3>
+        <p class="card-excerpt">Sisma Mujer, Ruta Pacífica y Red Nacional de Mujeres presentaron cinco ejes de política pública prioritaria.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">VS</div>Valentina Soto</div><span>hace 2h</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('f3')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1584308666744-c46591972a37?w=700&h=400&fit=crop&q=80" alt="Sistema Nacional de Cuidado: las mujeres dedican casi 8 horas diarias al trabajo no remunerado en Colombia" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-fem">Género</span>
+        <h3 class="card-title">Sistema Nacional de Cuidado: las mujeres dedican casi 8 horas diarias al trabajo no remunerado en Colombia</h3>
+        <p class="card-excerpt">El DANE revela que 32 millones de colombianos realizan trabajo de cuidado; si se pagara, sería el mayor sector económico.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#16a34a">AP</div>Andrea Parra</div><span>Ayer</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('f4')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1584308666744-c46591972a37?w=700&h=400&fit=crop&q=80&sat=-20" alt="Salud menstrual: el tabú que hace que millones de niñas falten al colegio en Colombia" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-fem">Género</span>
+        <h3 class="card-title">Salud menstrual: el tabú que hace que millones de niñas falten al colegio en Colombia</h3>
+        <p class="card-excerpt">La pobreza menstrual afecta principalmente a niñas rurales y en situación de desplazamiento.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#E2FF00;color:#7C3AED">CL</div>Claudia León</div><span>hace 2d</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('f5')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://www.elespectador.com/resizer/v2/WN2BZJWRJ3BZMHNSOACH5Q4WT4.jpg?auth=136324e39bac56cf6d97d49c5d252569ce29aa3fd2df4e42e72139775ad506ae&width=700&smart=true&quality=80" alt="Ley de paridad en el sector privado: Colombia debate exigir equidad de género en juntas directivas" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-fem">Género</span>
+        <h3 class="card-title">Ley de paridad en el sector privado: Colombia debate exigir equidad de género en juntas directivas</h3>
+        <p class="card-excerpt">Proyecto en primer debate en el Congreso busca obligar a empresas con más de 500 empleados a garantizar paridad.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">MH</div>Mariana Herrera</div><span>hace 3d</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('f6')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1513364776144-28b578c63ac7?w=700&h=400&fit=crop&q=80" alt="Arte feminista colombiano en auge: creadoras que usan el cuerpo como territorio de resistencia" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-fem">Género</span>
+        <h3 class="card-title">Arte feminista colombiano en auge: creadoras que usan el cuerpo como territorio de resistencia</h3>
+        <p class="card-excerpt">Exposición colectiva en el Museo de Arte Moderno de Bogotá reúne a 18 artistas con perspectiva de género.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#16a34a">SB</div>Sofía Burgos</div><span>hace 4d</span></div>
+      </div>
+    </article>
+  </div>
+  <button class="carousel-arrow next" onclick="scrollCarousel('grid-inicio-genero',1)" aria-label="Siguiente">›</button>
+</div>
+</div>
+
+<div class="home-section" id="home-sec-ambiente">
+  <div class="page-hero"><h1 style="color:var(--g)">🌿 Medio Ambiente</h1><p style="border-left-color:var(--gm)">La crisis ecológica vista desde quienes más la sufren: mujeres, comunidades indígenas y territorios en resistencia.</p></div>
+  <div class="news-carousel-wrap">
+  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-inicio-ambiente',-1)" aria-label="Anterior">‹</button>
+  <div class="news-grid" id="grid-inicio-ambiente" onscroll="updateCarouselArrows('grid-inicio-ambiente')">
+    <article class="news-card" onclick="openArticle('hero')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://d1x0qnenkl91hi.cloudfront.net/uploads/crops/full-width/feminismo_867af2b5bd_full-width.webp" alt="Crisis climática y brechas de género: el informe de ONU Mujeres que sacude a América Latina" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-amb">Ambiente</span>
+        <h3 class="card-title">Crisis climática y brechas de género: el informe de ONU Mujeres que sacude a América Latina</h3>
+        <p class="card-excerpt">Las mujeres rurales son las más vulnerables; acceden a menos recursos para adaptarse ante sequías e inundaciones.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#16a34a">CR</div>Camila Ríos</div><span>hace 2h</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('m1')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=700&h=400&fit=crop&q=80" alt="Mujeres indígenas del Putumayo bloquean operaciones mineras con respaldo de la CIDH" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-amb">Ambiente</span>
+        <h3 class="card-title">Mujeres indígenas del Putumayo bloquean operaciones mineras con respaldo de la CIDH</h3>
+        <p class="card-excerpt">La Corte Interamericana reconoció el derecho de las comunidades a la consulta previa y la protección territorial.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#16a34a">NQ</div>Natalia Quintero</div><span>hace 2h</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('m2')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=700&h=400&fit=crop&q=80" alt="Energía solar y sororidad: cooperativas de mujeres que transforman comunidades del Caribe colombiano" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-amb">Ambiente</span>
+        <h3 class="card-title">Energía solar y sororidad: cooperativas de mujeres que transforman comunidades del Caribe colombiano</h3>
+        <p class="card-excerpt">Tres veredas en Bolívar tienen electricidad por primera vez gracias a una cooperativa de 34 mujeres campesinas.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#E2FF00;color:#7C3AED">RC</div>Rosa Castro</div><span>hace 8h</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('m3')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1470813740244-df30734eeb10?w=700&h=400&fit=crop&q=80" alt="COP30 y el feminismo climático: las demandas que los estados siguen evadiendo en Belém do Pará" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-amb">Ambiente</span>
+        <h3 class="card-title">COP30 y el feminismo climático: las demandas que los estados siguen evadiendo en Belém do Pará</h3>
+        <p class="card-excerpt">Organizaciones exigen fondos específicos para mujeres en primera línea climática y representación indígena con voto.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">PG</div>Pilar García</div><span>Ayer</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('m4')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=700&h=400&fit=crop&q=80" alt="El agua como derecho feminista: guardianas del río en el Pacífico colombiano frente a la minería" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-amb">Ambiente</span>
+        <h3 class="card-title">El agua como derecho feminista: guardianas del río en el Pacífico colombiano frente a la minería</h3>
+        <p class="card-excerpt">Comunidades afrodescendientes lideradas por mujeres defienden sus fuentes hídricas contra la extracción ilegal.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#16a34a">LV</div>Lucía Vargas</div><span>hace 2d</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('m5')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=700&h=400&fit=crop&q=80" alt="Semillas y soberanía alimentaria: mujeres campesinas resisten el avance del agronegocio y los transgénicos" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-amb">Ambiente</span>
+        <h3 class="card-title">Semillas y soberanía alimentaria: mujeres campesinas resisten el avance del agronegocio y los transgénicos</h3>
+        <p class="card-excerpt">Las guardianas de semillas nativas de Nariño y Cauca mantienen variedades que el mercado habría extinguido.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#E2FF00;color:#7C3AED">TB</div>Teresa Bello</div><span>hace 3d</span></div>
+      </div>
+    </article>
+  </div>
+  <button class="carousel-arrow next" onclick="scrollCarousel('grid-inicio-ambiente',1)" aria-label="Siguiente">›</button>
+</div>
+</div>
+
+<div class="home-section" id="home-sec-politica">
+  <div class="page-hero"><h1 style="color:var(--pm)">🏛️ Política</h1><p style="border-left-color:var(--pm)">Seguimos la política desde una perspectiva feminista: poder, representación y democracia con equidad.</p></div>
+  <div class="news-carousel-wrap">
+  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-inicio-politica',-1)" aria-label="Anterior">‹</button>
+  <div class="news-grid" id="grid-inicio-politica" onscroll="updateCarouselArrows('grid-inicio-politica')">
+    <article class="news-card" onclick="openArticle('s1')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://www.elespectador.com/resizer/v2/WN2BZJWRJ3BZMHNSOACH5Q4WT4.jpg?auth=136324e39bac56cf6d97d49c5d252569ce29aa3fd2df4e42e72139775ad506ae&width=700&smart=true&quality=80" alt="Agenda Feminista 2026-2030: qué le piden las organizaciones al próximo gobierno de Colombia" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-pol">Política</span>
+        <h3 class="card-title">Agenda Feminista 2026-2030: qué le piden las organizaciones al próximo gobierno de Colombia</h3>
+        <p class="card-excerpt">Sisma Mujer y otras 7 organizaciones presentaron la hoja de ruta de igualdad para el próximo cuatrienio.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">JR</div>Julia Reyes</div><span>hace 1h</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('p1')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://d1x0qnenkl91hi.cloudfront.net/uploads/COLP_318978_7a18ac0fe4.jpeg" alt="Bancada de mujeres incluye violencia económica y simbólica en nueva ley de violencia intrafamiliar" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-pol">Política</span>
+        <h3 class="card-title">Bancada de mujeres incluye violencia económica y simbólica en nueva ley de violencia intrafamiliar</h3>
+        <p class="card-excerpt">El texto ampliado ya fue aprobado en primer debate en la Cámara de Representantes.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#E2FF00;color:#7C3AED">SF</div>Sara Fuentes</div><span>hace 3h</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('p2')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&h=400&fit=crop&q=80&flip=h" alt="El 67% de mujeres colombianas se siente excluida de la política según encuesta de 2.400 personas" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-pol">Política</span>
+        <h3 class="card-title">El 67% de mujeres colombianas se siente excluida de la política según encuesta de 2.400 personas</h3>
+        <p class="card-excerpt">El 54% reporta haber sufrido violencia política de género en campaña electoral o en cargos públicos.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#C1FF00">AM</div>Ana Mora</div><span>Ayer</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('s5')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://d1x0qnenkl91hi.cloudfront.net/uploads/COLP_318978_7a18ac0fe4.jpeg" alt="Violencia digital contra candidatas: ataques sexualizantes y acusaciones falsas marcan la campaña 2026" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-pol">Política</span>
+        <h3 class="card-title">Violencia digital contra candidatas: ataques sexualizantes y acusaciones falsas marcan la campaña 2026</h3>
+        <p class="card-excerpt">ColombiaCheck documentó 35% de comentarios con insultos o ataques sexualizantes contra candidatas.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">JR</div>Julia Reyes</div><span>hace 6h</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('p3')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://www.elespectador.com/resizer/v2/WN2BZJWRJ3BZMHNSOACH5Q4WT4.jpg?auth=136324e39bac56cf6d97d49c5d252569ce29aa3fd2df4e42e72139775ad506ae&width=700&smart=true&quality=80" alt="Reforma electoral y cuotas de género: lo que realmente cambiaría para la participación de las mujeres" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-pol">Política</span>
+        <h3 class="card-title">Reforma electoral y cuotas de género: lo que realmente cambiaría para la participación de las mujeres</h3>
+        <p class="card-excerpt">Expertas analizan el borrador de reforma y sus implicaciones reales en los partidos y listas cerradas.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#16a34a">MV</div>María Villa</div><span>hace 2d</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('dh2')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://www.elespectador.com/resizer/v2/WBY73HE5FREQXEM4N4CKS7K3GE.jpg?auth=43d8243a7bf714cd9998af3f22d7eedac23415e392ea5cdb9cf7f7949575c7e9&width=700&smart=true&quality=80" alt="Corte IDH condena a Colombia y obliga a reformar los protocolos de protección a defensoras de DDHH" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-pol">Política</span>
+        <h3 class="card-title">Corte IDH condena a Colombia y obliga a reformar los protocolos de protección a defensoras de DDHH</h3>
+        <p class="card-excerpt">El Estado deberá reparar a 23 mujeres defensoras y emitir acto público de reconocimiento de responsabilidad.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#d97706">IP</div>Isabel Pérez</div><span>hace 3d</span></div>
+      </div>
+    </article>
+  </div>
+  <button class="carousel-arrow next" onclick="scrollCarousel('grid-inicio-politica',1)" aria-label="Siguiente">›</button>
+</div>
+</div>
+
+<div class="home-section" id="home-sec-ddhh">
+  <div class="page-hero"><h1 style="color:#b45309">⚖️ Derechos Humanos</h1><p style="border-left-color:#d97706">Denunciamos las violaciones a los derechos humanos con énfasis en mujeres, niñas y comunidades en riesgo.</p></div>
+  <div class="news-carousel-wrap">
+  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-inicio-ddhh',-1)" aria-label="Anterior">‹</button>
+  <div class="news-grid" id="grid-inicio-ddhh" onscroll="updateCarouselArrows('grid-inicio-ddhh')">
+    <article class="news-card" onclick="openArticle('dh1')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://www.elespectador.com/resizer/v2/WN2BZJWRJ3BZMHNSOACH5Q4WT4.jpg?auth=136324e39bac56cf6d97d49c5d252569ce29aa3fd2df4e42e72139775ad506ae&width=700&smart=true&quality=80" alt="457 amenazas de muerte a líderes sociales en Colombia en contexto preelectoral según la Defensoría" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-dh">DDHH</span>
+        <h3 class="card-title">457 amenazas de muerte a líderes sociales en Colombia en contexto preelectoral según la Defensoría</h3>
+        <p class="card-excerpt">Las mujeres son las más afectadas: violencia de género armada, vetos y regulación forzada de su actividad política.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">DM</div>Diana Mejía</div><span>hace 5h</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('s3')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://www.elespectador.com/resizer/v2/WBY73HE5FREQXEM4N4CKS7K3GE.jpg?auth=43d8243a7bf714cd9998af3f22d7eedac23415e392ea5cdb9cf7f7949575c7e9&width=700&smart=true&quality=80" alt="Corte IDH condena a Colombia: fallo histórico en favor de 23 mujeres defensoras de derechos humanos" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-dh">DDHH</span>
+        <h3 class="card-title">Corte IDH condena a Colombia: fallo histórico en favor de 23 mujeres defensoras de derechos humanos</h3>
+        <p class="card-excerpt">El Estado deberá reformar sus protocolos de protección y emitir un reconocimiento público de responsabilidad.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#d97706">IP</div>Isabel Pérez</div><span>hace 1d</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('dh2')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=700&h=400&fit=crop&q=80" alt="Migrantes venezolanas: redes de trata explotan mujeres en la ruta del Darién con total impunidad" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-dh">DDHH</span>
+        <h3 class="card-title">Migrantes venezolanas: redes de trata explotan mujeres en la ruta del Darién con total impunidad</h3>
+        <p class="card-excerpt">Investigación de seis meses con 28 sobrevivientes documenta la cadena que involucra a funcionarios corruptos.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#E2FF00;color:#7C3AED">GL</div>Gloria Luna</div><span>hace 2d</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('dh3')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&h=400&fit=crop&q=80&bri=10" alt="Diez mujeres asesinadas en Arauca en 2025: la violencia de género que deja la disputa armada" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-dh">DDHH</span>
+        <h3 class="card-title">Diez mujeres asesinadas en Arauca en 2025: la violencia de género que deja la disputa armada</h3>
+        <p class="card-excerpt">La Defensoría hace un llamado urgente a los grupos armados a cesar la violencia de género en la región.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#d97706">RC</div>Redacción C+20</div><span>hace 3d</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('dh4')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&h=400&fit=crop&q=80&bri=10" alt="Voces con poder: ONU Mujeres fortalece a lideresas en Nariño y Cauca ante el recrudecimiento electoral" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-dh">DDHH</span>
+        <h3 class="card-title">Voces con poder: ONU Mujeres fortalece a lideresas en Nariño y Cauca ante el recrudecimiento electoral</h3>
+        <p class="card-excerpt">30 mujeres reciben capacitación en protección, rutas de denuncia y mecanismos institucionales de seguridad.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#7c3aed">DM</div>Diana Mejía</div><span>hace 4d</span></div>
+      </div>
+    </article>
+    <article class="news-card" onclick="openArticle('dh5')">
+      <div style="position:relative;height:150px;overflow:hidden;flex-shrink:0"><img style="width:100%;height:150px;object-fit:cover;display:block;transition:transform .4s" src="https://d1x0qnenkl91hi.cloudfront.net/uploads/COLP_318978_7a18ac0fe4.jpeg" alt="Campaña bajo ataque digital: el doble desafío de las mujeres en la política colombiana en 2026" loading="lazy" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentNode.style.background='#ddd6fe'"/></div>
+      <div class="card-body">
+        <span class="card-tag t-dh">DDHH</span>
+        <h3 class="card-title">Campaña bajo ataque digital: el doble desafío de las mujeres en la política colombiana en 2026</h3>
+        <p class="card-excerpt">17 senadoras y candidatas documentaron ataques digitales en los últimos tres meses de campaña.</p>
+        <div class="card-footer"><div class="card-author"><div class="author-dot" style="background:#d97706">RD</div>Redacción</div><span>hace 5d</span></div>
+      </div>
+    </article>
+  </div>
+  <button class="carousel-arrow next" onclick="scrollCarousel('grid-inicio-ddhh',1)" aria-label="Siguiente">›</button>
+</div>
+</div>
+
+<div class="home-section" id="home-sec-opinion">
+  <div class="page-hero"><h1 style="color:var(--pm)">✍️ Opinión</h1><p style="border-left-color:var(--rm)">Voces diversas que analizan, cuestionan y proponen desde el feminismo y los derechos humanos.</p></div>
+  <div class="news-carousel-wrap">
+  <button class="carousel-arrow prev is-hidden" onclick="scrollCarousel('grid-inicio-opinion',-1)" aria-label="Anterior">‹</button>
+  <div class="opinion-grid" id="grid-inicio-opinion" onscroll="updateCarouselArrows('grid-inicio-opinion')">
+    <div class="opinion-card" style="padding:20px" onclick="openArticle('op1')">
+      <div class="op-avatar" style="background:var(--rm);width:54px;height:54px;font-size:18px;color:#7C3AED">MR</div>
+      <div class="op-author" style="font-size:16px">María Rondón</div><div class="op-role">Abogada feminista, Sisma Mujer</div>
+      <div class="op-title" style="font-size:16px;margin-top:8px">El aborto no es debate, es derecho: reflexiones desde la trinchera legal colombiana</div>
+      <p style="font-size:13px;color:var(--gray);margin-top:8px;line-height:1.5">Después de la despenalización de 2022, el acceso real sigue siendo el próximo campo de batalla.</p>
+    </div>
+    <div class="opinion-card" style="padding:20px" onclick="openArticle('op2')">
+      <div class="op-avatar" style="background:var(--pm);width:54px;height:54px;font-size:18px">CT</div>
+      <div class="op-author" style="font-size:16px">Carmen Torres</div><div class="op-role">Ecologista, Ruta Pacífica</div>
+      <div class="op-title" style="font-size:16px;margin-top:8px">Pachamama y feminismo: dos luchas que nacieron juntas y que la COP30 no puede ignorar</div>
+      <p style="font-size:13px;color:var(--gray);margin-top:8px;line-height:1.5">El extractivismo que destruye el territorio y el patriarcado que controla los cuerpos son la misma lógica.</p>
+    </div>
+    <div class="opinion-card" style="padding:20px" onclick="openArticle('op3')">
+      <div class="op-avatar" style="background:var(--g);width:54px;height:54px;font-size:18px">IS</div>
+      <div class="op-author" style="font-size:16px">Isabel Salinas</div><div class="op-role">Periodista, investigadora DDHH</div>
+      <div class="op-title" style="font-size:16px;margin-top:8px">El periodismo feminista no es sesgo: es la corrección de una deuda histórica con las silenciadas</div>
+      <p style="font-size:13px;color:var(--gray);margin-top:8px;line-height:1.5">La objetividad que exige la prensa tradicional ha sido siempre la objetividad del poder masculino.</p>
+    </div>
+    <div class="opinion-card" style="padding:20px" onclick="openArticle('op4')">
+      <div class="op-avatar" style="background:#0891b2;width:54px;height:54px;font-size:18px">DL</div>
+      <div class="op-author" style="font-size:16px">Diana López</div><div class="op-role">Politóloga, Universidad Nacional</div>
+      <div class="op-title" style="font-size:16px;margin-top:8px">Paridad sin sororidad: la trampa del feminismo liberal que los gobiernos progresistas repiten</div>
+      <p style="font-size:13px;color:var(--gray);margin-top:8px;line-height:1.5">Poner mujeres en el poder sin transformar las estructuras es solo maquillar el patriarcado institucional.</p>
+    </div>
+    <div class="opinion-card" style="padding:20px" onclick="openArticle('op5')">
+      <div class="op-avatar" style="background:#db2777;width:54px;height:54px;font-size:18px">SV</div>
+      <div class="op-author" style="font-size:16px">Sara Villa</div><div class="op-role">Activista digital, Karisma</div>
+      <div class="op-title" style="font-size:16px;margin-top:8px">El feminismo que no incomoda no sirve: reflexiones sobre las candidatas y la violencia electoral</div>
+      <p style="font-size:13px;color:var(--gray);margin-top:8px;line-height:1.5">Los ataques digitales a candidatas no son polarización: son una estrategia deliberada para expulsarlas.</p>
+    </div>
+    <div class="opinion-card" style="padding:20px" onclick="openArticle('op6')">
+      <div class="op-avatar" style="background:#b45309;width:54px;height:54px;font-size:18px">AQ</div>
+      <div class="op-author" style="font-size:16px">Aída Quilcué</div><div class="op-role">Senadora, lideresa indígena</div>
+      <div class="op-title" style="font-size:16px;margin-top:8px">La paz territorial no existe sin las mujeres: lo que Colombia todavía le debe a las comunidades</div>
+      <p style="font-size:13px;color:var(--gray);margin-top:8px;line-height:1.5">El Acuerdo de Paz tiene perspectiva de género en el papel; en los territorios sigue sin llegar.</p>
+    </div>
+  </div>
+  <button class="carousel-arrow next" onclick="scrollCarousel('grid-inicio-opinion',1)" aria-label="Siguiente">›</button>
+</div>
+</div>
+
+<div class="home-section" id="home-sec-investigacion">
+  <div class="page-hero"><h1 style="color:var(--pm)">🔍 Periodismo de Investigación</h1><p style="border-left-color:var(--pm)">Investigaciones de largo aliento que exponen estructuras de poder, violencia y desigualdad.</p></div>
+  <div id="grid-inicio-investigacion">
+  <div class="inv-card" onclick="openArticle('inv1')">
+    <div style="position:relative;width:180px;min-height:160px;overflow:hidden;flex-shrink:0">
+      <img style="width:180px;height:100%;min-height:160px;object-fit:cover;display:block" src="https://www.elespectador.com/resizer/v2/WBY73HE5FREQXEM4N4CKS7K3GE.jpg?auth=43d8243a7bf714cd9998af3f22d7eedac23415e392ea5cdb9cf7f7949575c7e9&width=700&smart=true&quality=80" alt="Las redes de impunidad: cómo el sistema judicial revictimiza a las denunciantes de violencia sexual" loading="lazy" onerror="this.parentNode.style.background='#ddd6fe'"/>
+    </div>
+    <div style="padding:20px">
+      <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--pm);margin-bottom:8px">INVESTIGACIÓN ESPECIAL · 6 ENTREGAS</div>
+      <h2 style="font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;margin-bottom:10px;color:var(--bk)">Las redes de impunidad: cómo el sistema judicial revictimiza a las denunciantes de violencia sexual</h2>
+      <p style="font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:14px">Ocho meses de investigación, 34 fuentes y cientos de documentos revelan que menos del 3% de los casos de violencia sexual llegan a condena en Colombia.</p>
+      <span style="background:var(--pll);color:var(--pm);font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;padding:5px 14px;border-radius:4px">LEER INVESTIGACIÓN →</span>
+    </div>
+  </div>
+  <div class="inv-card" onclick="openArticle('inv2')">
+    <div style="position:relative;width:180px;min-height:160px;overflow:hidden;flex-shrink:0">
+      <img style="width:180px;height:100%;min-height:160px;object-fit:cover;display:block" src="https://images.unsplash.com/photo-1470813740244-df30734eeb10?w=700&h=400&fit=crop&q=80" alt="Minería, mujeres y silencio: el precio del oro en el Chocó" loading="lazy" onerror="this.parentNode.style.background='#ddd6fe'"/>
+    </div>
+    <div style="padding:20px">
+      <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--gm);margin-bottom:8px">INVESTIGACIÓN · 3 ENTREGAS</div>
+      <h2 style="font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;margin-bottom:10px;color:var(--bk)">Minería, mujeres y silencio: el precio del oro en el Chocó</h2>
+      <p style="font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:14px">Comunidades afrodescendientes revelan cómo la minería ilegal, financiada por grupos armados, destruye territorios y cuerpos sin que el Estado actúe.</p>
+      <span style="background:var(--gl);color:var(--g);font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;padding:5px 14px;border-radius:4px">LEER INVESTIGACIÓN →</span>
+    </div>
+  </div>
+  <div class="inv-card" onclick="openArticle('inv3')">
+    <div style="position:relative;width:180px;min-height:160px;overflow:hidden;flex-shrink:0">
+      <img style="width:180px;height:100%;min-height:160px;object-fit:cover;display:block" src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&h=400&fit=crop&q=80" alt="Campañas bajo ataque digital: violencia de género en la política colombiana en tiempos electorales" loading="lazy" onerror="this.parentNode.style.background='#ddd6fe'"/>
+    </div>
+    <div style="padding:20px">
+      <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:var(--pm);margin-bottom:8px">INVESTIGACIÓN ELECTORAL · 2026</div>
+      <h2 style="font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;margin-bottom:10px;color:var(--bk)">Campañas bajo ataque digital: violencia de género en la política colombiana en tiempos electorales</h2>
+      <p style="font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:14px">ColombiaCheck e investigadoras documentaron cómo candidatas son acosadas, amenazadas y silenciadas con impunidad en redes sociales.</p>
+      <span style="background:var(--pll);color:var(--pm);font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;padding:5px 14px;border-radius:4px">LEER INVESTIGACIÓN →</span>
+    </div>
+  </div>
+  <div class="inv-card" onclick="openArticle('inv4')">
+    <div style="position:relative;width:180px;min-height:160px;overflow:hidden;flex-shrink:0">
+      <img style="width:180px;height:100%;min-height:160px;object-fit:cover;display:block" src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=700&h=400&fit=crop&q=80" alt="Catatumbo: mujeres entre el fuego cruzado — el conflicto que las instituciones invisibilizan" loading="lazy" onerror="this.parentNode.style.background='#ddd6fe'"/>
+    </div>
+    <div style="padding:20px">
+      <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;color:#d97706;margin-bottom:8px">INVESTIGACIÓN · CONFLICTO ARMADO</div>
+      <h2 style="font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;margin-bottom:10px;color:var(--bk)">Catatumbo: mujeres entre el fuego cruzado — el conflicto que las instituciones invisibilizan</h2>
+      <p style="font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:14px">Las mujeres del Catatumbo enfrentan violencia sexual como arma de guerra, desplazamiento y amenazas por reclamar sus derechos.</p>
+      <span style="background:#fffbeb;color:#b45309;font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;padding:5px 14px;border-radius:4px">LEER INVESTIGACIÓN →</span>
+    </div>
+  </div>
+  </div>
+</div>
 
     </div>
   </div>
@@ -949,8 +1327,9 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
 
 <!-- ====== INVESTIGACIÓN ====== -->
 <div id="page-investigacion" class="page">
-<div class="main-wrapper" id="grid-investigacion">
+<div class="main-wrapper">
   <div class="page-hero"><h1 style="color:var(--pm)">🔍 Periodismo de Investigación</h1><p style="border-left-color:var(--pm)">Investigaciones de largo aliento que exponen estructuras de poder, violencia y desigualdad.</p></div>
+  <div id="grid-investigacion">
   <div class="inv-card" onclick="openArticle('inv1')">
     <div style="position:relative;width:180px;min-height:160px;overflow:hidden;flex-shrink:0">
       <img style="width:180px;height:100%;min-height:160px;object-fit:cover;display:block" src="https://www.elespectador.com/resizer/v2/WBY73HE5FREQXEM4N4CKS7K3GE.jpg?auth=43d8243a7bf714cd9998af3f22d7eedac23415e392ea5cdb9cf7f7949575c7e9&width=700&smart=true&quality=80" alt="Las redes de impunidad: cómo el sistema judicial revictimiza a las denunciantes de violencia sexual" loading="lazy" onerror="this.parentNode.style.background='#ddd6fe'"/>
@@ -994,6 +1373,7 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
       <p style="font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:14px">Las mujeres del Catatumbo enfrentan violencia sexual como arma de guerra, desplazamiento y amenazas por reclamar sus derechos.</p>
       <span style="background:#fffbeb;color:#b45309;font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;padding:5px 14px;border-radius:4px">LEER INVESTIGACIÓN →</span>
     </div>
+  </div>
   </div>
 </div>
 </div>
@@ -1898,8 +2278,8 @@ var RABIOZAS_NEWS = (function() {
     ambiente:      { label:'Ambiente',      tagBg:'bg-amb', tagText:'t-amb', icon:'🌿', grids:['grid-inicio-ambiente','grid-ambiente'],  inv:false },
     politica:      { label:'Política',      tagBg:'bg-pol', tagText:'t-pol', icon:'🏛', grids:['grid-inicio-politica','grid-politica'],  inv:false },
     ddhh:          { label:'DDHH',          tagBg:'bg-dh',  tagText:'t-dh',  icon:'⚖', grids:['grid-inicio-ddhh','grid-ddhh'],          inv:false },
-    investigacion: { label:'Investigación', tagBg:'bg-pol', tagText:'t-pol', icon:'🔍', grids:['grid-investigacion'],                    inv:true  },
-    opinion:       { label:'Opinión',       tagBg:'bg-fem', tagText:'t-fem', icon:'✍️', grids:['grid-opinion-pagina'],                   inv:false }
+    investigacion: { label:'Investigación', tagBg:'bg-pol', tagText:'t-pol', icon:'🔍', grids:['grid-inicio-investigacion','grid-investigacion'], inv:true  },
+    opinion:       { label:'Opinión',       tagBg:'bg-fem', tagText:'t-fem', icon:'✍️', grids:['grid-inicio-opinion','grid-opinion-pagina'],       inv:false }
   };
 
   var DATA = null; // Cache de las noticias cargadas
@@ -2580,46 +2960,9 @@ var RABIOZAS_NEWS = (function() {
       heroMeta.textContent = 'Publica tu primera noticia desde el panel admin';
     }
 
-    // SIDEBAR: las 5 más recientes (excluyendo la que ya es Hero, si aplica)
-    var sideItems = todas.filter(function(t) { return t !== heroPick; }).slice(0, 5);
-    sideWrap.innerHTML = '';
-    if (sideItems.length === 0) {
-      sideWrap.innerHTML = '<div style="padding:16px;color:#9ca3af;font-size:13px;font-family:Poppins,sans-serif">Aún no hay más noticias.</div>';
-      return;
-    }
-    sideItems.forEach(function(item) {
-      var cat = CATS[item.catKey] || { label: 'Rabiozas', tagText: 't-pol', icon: '📰' };
-      var card = document.createElement('article');
-      card.className = 'side-card';
-      card.onclick = function() { abrirArticulo(item.art, item.catKey); };
-
-      var img = document.createElement('img');
-      img.style.cssText = 'width:80px;height:70px;border-radius:6px;object-fit:cover;flex-shrink:0';
-      img.src = item.art.imagen || '';
-      img.alt = item.art.titulo || '';
-      img.loading = 'lazy';
-      img.setAttribute('data-emoji', cat.icon || '📰');
-      img.setAttribute('data-bg', '#ddd6fe');
-      img.onerror = function() { sideCardImgError(this); };
-
-      var info = document.createElement('div');
-      var tag = document.createElement('div');
-      tag.className = 'side-tag ' + (cat.tagText || 't-pol');
-      tag.textContent = cat.label;
-      var title = document.createElement('div');
-      title.className = 'side-title';
-      title.textContent = item.art.titulo || '';
-      var time = document.createElement('div');
-      time.className = 'side-time';
-      time.textContent = timeAgo(item.art.fecha);
-      info.appendChild(tag);
-      info.appendChild(title);
-      info.appendChild(time);
-
-      card.appendChild(img);
-      card.appendChild(info);
-      sideWrap.appendChild(card);
-    });
+    // SIDEBAR: ahora muestra el widget de Instagram (@rabiozasmedio) en vez
+    // del listado de noticias — el HTML del embed queda fijo en sideWrap,
+    // por lo que aquí ya no se sobreescribe su contenido.
   }
 
   // ── Aplicar configuración del sitio (encabezados, redes, El Medio) ───
@@ -2643,17 +2986,23 @@ var RABIOZAS_NEWS = (function() {
     };
     Object.keys(catMap).forEach(function(key) {
       var sec = catMap[key].sec;
-      var pageHero = document.querySelector('#page-' + sec + ' .page-hero');
-      if (!pageHero) return;
-      var h1 = pageHero.querySelector('h1');
-      var p = pageHero.querySelector('p');
+      // Además del .page-hero de su propia pestaña, cada sección de Género,
+      // Ambiente, Política y DDHH tiene una copia en Inicio (home-sec-<key>):
+      // se actualizan ambas para que el panel admin siga siendo la única fuente.
+      var selector = '#page-' + sec + ' .page-hero, #home-sec-' + key + ' .page-hero';
+      var pageHeroes = document.querySelectorAll(selector);
+      if (!pageHeroes.length) return;
       var emoji = config['cat_emoji_' + key];
       var title = config['cat_title_' + key];
       var desc  = config['cat_desc_' + key];
-      if (h1 && (emoji || title)) {
-        h1.textContent = (emoji || '') + ' ' + (title || h1.textContent.replace(/^\S+\s/, ''));
-      }
-      if (p && desc) p.textContent = desc;
+      pageHeroes.forEach(function(pageHero) {
+        var h1 = pageHero.querySelector('h1');
+        var p = pageHero.querySelector('p');
+        if (h1 && (emoji || title)) {
+          h1.textContent = (emoji || '') + ' ' + (title || h1.textContent.replace(/^\S+\s/, ''));
+        }
+        if (p && desc) p.textContent = desc;
+      });
     });
 
     // Redes sociales del footer
