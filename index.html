@@ -140,6 +140,14 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
 .ig-embed-follow:hover{opacity:.9}
 .ig-embed-frame-wrap{flex:1;min-height:280px;position:relative;background:#fafafa}
 .ig-embed-frame{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ig-reel-wrap{flex:1;min-height:280px;display:flex;flex-direction:column;background:#fafafa;padding:10px}
+.ig-reel-embed-holder{flex:1;overflow:hidden;border-radius:8px}
+.ig-reel-expand{margin:10px 2px 2px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--pm);color:#fff;border:none;border-radius:20px;padding:9px 14px;font-family:'Poppins',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:opacity .2s}
+.ig-reel-expand:hover{opacity:.9}
+.ig-reel-modal{display:none;position:fixed;inset:0;background:rgba(20,10,40,.8);z-index:9999;align-items:center;justify-content:center;padding:24px}
+.ig-reel-modal.open{display:flex}
+.ig-reel-modal-inner{background:#fff;border-radius:14px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;position:relative;padding:16px}
+.ig-reel-modal-close{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center}
 
 /* HOME: secciones apiladas debajo del hero (misma vista que cada pestaña) */
 .home-section{margin-bottom:8px}
@@ -577,14 +585,23 @@ body{font-family:'Poppins',sans-serif;background:var(--lgt);color:var(--bk);font
           <span class="ig-embed-icon">📷</span>
           <div>
             <div class="ig-embed-title">@rabiozasmedio</div>
-            <div class="ig-embed-sub">Último post en Instagram</div>
+            <div class="ig-embed-sub">Último reel en Instagram</div>
           </div>
           <a class="ig-embed-follow" href="https://www.instagram.com/rabiozasmedio/" target="_blank" rel="noopener">Ver perfil</a>
         </div>
-        <div class="ig-embed-frame-wrap">
-          <iframe class="ig-embed-frame" src="https://www.instagram.com/rabiozasmedio/embed" loading="lazy" scrolling="no" allowtransparency="true" title="Última publicación de Instagram de Rabiozas"></iframe>
+        <div class="ig-reel-wrap" id="igReelSidebarWrap">
+          <div class="ig-reel-embed-holder" id="igReelSidebarHolder"></div>
+          <button class="ig-reel-expand" id="igReelExpandBtn" onclick="openReelModal()">▶ Ver en grande</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal del último reel de Instagram (se abre desde la barra lateral de Inicio) -->
+  <div class="ig-reel-modal" id="igReelModal" onclick="if(event.target===this) closeReelModal()">
+    <div class="ig-reel-modal-inner">
+      <button class="ig-reel-modal-close" onclick="closeReelModal()">✕</button>
+      <div id="igReelModalHolder"></div>
     </div>
   </div>
 
@@ -2975,6 +2992,11 @@ var RABIOZAS_NEWS = (function() {
     if (popupTitleEl && config.popup_title) popupTitleEl.textContent = config.popup_title;
     if (popupSubEl && config.popup_sub) popupSubEl.textContent = config.popup_sub;
 
+    // Último reel de Instagram: viene del Sheet (config.instagram_latest_reel_url),
+    // igual que el resto de la configuración del sitio — así se actualiza solo
+    // en cada carga/refresh, sin tocar el HTML.
+    if (window.renderReelEmbeds) window.renderReelEmbeds(config.instagram_latest_reel_url);
+
     // Encabezados de categoría: <h1> y <p> dentro de cada .page-hero
     var catMap = {
       genero:        { sec: 'feminismo' },
@@ -3261,5 +3283,77 @@ if (document.readyState === 'loading') {
   RABIOZAS_NEWS.init();
 }
 </script>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     ÚLTIMO REEL DE INSTAGRAM (barra lateral de Inicio)
+     ──────────────────────────────────────────────────────────────────
+     El link se lee de config.instagram_latest_reel_url, que viene del
+     mismo Google Sheet/Apps Script que ya alimenta el resto del sitio
+     (applySiteConfig lo llama automáticamente en cada carga/refresh).
+     Mientras ese campo esté vacío, se muestra el widget del perfil
+     completo como respaldo para que la sección nunca quede vacía.
+     ══════════════════════════════════════════════════════════════════ -->
+<script>
+  // 👉 Fallback SOLO por si el Sheet aún no trae config.instagram_latest_reel_url
+  // (primera visita sin caché, o antes de correr el workflow de n8n).
+  var RABIOZAS_LATEST_REEL_URL = 'https://www.instagram.com/p/DcMLDeqpz28/';
+
+  function esLinkDeReelValido(url) {
+    return /^https:\/\/www\.instagram\.com\/(reel|p)\/[A-Za-z0-9_-]+\/?/.test(url || '');
+  }
+
+  function renderReelEmbeds(urlDesdeConfig) {
+    if (urlDesdeConfig) RABIOZAS_LATEST_REEL_URL = urlDesdeConfig;
+    var sideHolder  = document.getElementById('igReelSidebarHolder');
+    var modalHolder = document.getElementById('igReelModalHolder');
+    var expandBtn   = document.getElementById('igReelExpandBtn');
+    if (!sideHolder || !modalHolder) return;
+
+    if (esLinkDeReelValido(RABIOZAS_LATEST_REEL_URL)) {
+      var bq =
+        '<blockquote class="instagram-media" data-instgrm-permalink="' + RABIOZAS_LATEST_REEL_URL + '" ' +
+        'data-instgrm-version="14" style="margin:0 auto;width:100%;max-width:100%"></blockquote>';
+      sideHolder.innerHTML = bq;
+      modalHolder.innerHTML = bq;
+      if (expandBtn) expandBtn.style.display = 'flex';
+      if (window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
+    } else {
+      // Sin link configurado todavía: se mantiene visible el widget del
+      // perfil completo (últimas publicaciones) para que la sección
+      // nunca se vea vacía o rota.
+      sideHolder.innerHTML =
+        '<iframe class="ig-embed-frame" style="position:static;width:100%;height:100%;min-height:280px;border:0" ' +
+        'src="https://www.instagram.com/rabiozasmedio/embed" loading="lazy" scrolling="no" allowtransparency="true" ' +
+        'title="Últimas publicaciones de Instagram de Rabiozas"></iframe>';
+      if (expandBtn) expandBtn.style.display = 'none';
+    }
+  }
+
+  function openReelModal() {
+    var modal = document.getElementById('igReelModal');
+    if (!modal) return;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
+  }
+  function closeReelModal() {
+    var modal = document.getElementById('igReelModal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  window.openReelModal = openReelModal;
+  window.closeReelModal = closeReelModal;
+  window.renderReelEmbeds = renderReelEmbeds;
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeReelModal(); });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { renderReelEmbeds(); });
+  } else {
+    renderReelEmbeds();
+  }
+</script>
+<script async src="https://www.instagram.com/embed.js" onload="if(window.instgrm){window.instgrm.Embeds.process();}"></script>
+
 </body>
 </html>
