@@ -51,6 +51,27 @@ input[type=text], input[type=url], select, textarea{
 }
 textarea{resize:vertical;min-height:90px}
 textarea.body-editor{min-height:200px}
+
+/* ── Editor de texto enriquecido (cuerpo de la noticia) ── */
+.rte-wrap{border:1.5px solid var(--pl);border-radius:10px;background:var(--pll);overflow:hidden}
+.rte-wrap:focus-within{border-color:var(--pm);background:#fff}
+.rte-bar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:8px;border-bottom:1.5px solid var(--pl);background:#fff;position:sticky;top:0;z-index:2}
+.rte-btn{min-width:34px;height:34px;padding:0 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:#374151;font-family:inherit;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.rte-btn:hover{background:var(--pll);border-color:var(--pl)}
+.rte-btn.on{background:var(--pm);color:#fff}
+.rte-sep{width:1px;height:22px;background:var(--pl);margin:0 4px}
+.rte-colors{display:inline-flex;align-items:center;gap:4px;padding:0 4px}
+.rte-colors small{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;margin-right:2px}
+.rte-dot{width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--pl);cursor:pointer;padding:0}
+.rte-dot:hover{transform:scale(1.12)}
+.rte-area{min-height:260px;max-height:560px;overflow-y:auto;padding:14px 16px;font-size:15px;line-height:1.7;color:#1f2937;outline:none}
+.rte-area:empty:before{content:attr(data-placeholder);color:#9ca3af}
+.rte-area p{margin:0 0 12px}
+.rte-area h3{font-size:18px;font-weight:800;color:var(--p);margin:18px 0 8px}
+.rte-area ul,.rte-area ol{margin:0 0 12px 22px}
+.rte-area blockquote{border-left:4px solid var(--pm);padding:4px 0 4px 14px;margin:0 0 12px;color:#4b5563;font-style:italic}
+.rte-area a{color:var(--pm);text-decoration:underline}
+.rte-hint{font-size:12px;color:var(--gray);margin-top:6px}
 input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);background:#fff}
 
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -149,7 +170,38 @@ input:focus, select:focus, textarea:focus{outline:none;border-color:var(--pm);ba
         <textarea id="fResumen" placeholder="Resumen corto, 1-2 oraciones..."></textarea>
 
         <label>Cuerpo completo (se ve al abrir la noticia)</label>
-        <textarea class="body-editor" id="fCuerpo" placeholder="Escribe el artículo completo aquí. Puedes usar líneas en blanco para separar párrafos."></textarea>
+        <div class="rte-wrap">
+          <div class="rte-bar" id="rteBar">
+            <button type="button" class="rte-btn" data-cmd="bold" title="Negrita (Ctrl+B)"><b>N</b></button>
+            <button type="button" class="rte-btn" data-cmd="italic" title="Cursiva (Ctrl+I)"><i>C</i></button>
+            <button type="button" class="rte-btn" data-cmd="underline" title="Subrayado (Ctrl+U)"><u>S</u></button>
+            <button type="button" class="rte-btn" data-cmd="strikeThrough" title="Tachado"><s>T</s></button>
+            <span class="rte-sep"></span>
+            <button type="button" class="rte-btn" data-block="h3" title="Subtítulo">Subtítulo</button>
+            <button type="button" class="rte-btn" data-block="p" title="Texto normal">Normal</button>
+            <button type="button" class="rte-btn" data-block="blockquote" title="Cita destacada">❝ Cita</button>
+            <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Lista con viñetas">• Lista</button>
+            <button type="button" class="rte-btn" data-cmd="insertOrderedList" title="Lista numerada">1. Lista</button>
+            <button type="button" class="rte-btn" data-link="1" title="Agregar enlace al texto seleccionado">🔗 Enlace</button>
+            <span class="rte-sep"></span>
+            <span class="rte-colors"><small>Letra</small>
+              <button type="button" class="rte-dot" data-color="#111827" style="background:#111827" title="Negro"></button>
+              <button type="button" class="rte-dot" data-color="#7C3AED" style="background:#7C3AED" title="Morado Rabiozas"></button>
+              <button type="button" class="rte-dot" data-color="#DC2626" style="background:#DC2626" title="Rojo"></button>
+              <button type="button" class="rte-dot" data-color="#047857" style="background:#047857" title="Verde"></button>
+              <button type="button" class="rte-dot" data-color="#6B7280" style="background:#6B7280" title="Gris"></button>
+            </span>
+            <span class="rte-colors"><small>Resaltar</small>
+              <button type="button" class="rte-dot" data-hl="#E9FF99" style="background:#E9FF99" title="Resaltado verde lima"></button>
+              <button type="button" class="rte-dot" data-hl="#EDE9FE" style="background:#EDE9FE" title="Resaltado lila"></button>
+              <button type="button" class="rte-dot" data-hl="#FEF08A" style="background:#FEF08A" title="Resaltado amarillo"></button>
+            </span>
+            <span class="rte-sep"></span>
+            <button type="button" class="rte-btn" data-clear="1" title="Quitar formato del texto seleccionado">✕ Quitar formato</button>
+          </div>
+          <div class="rte-area" id="fCuerpo" contenteditable="true" data-placeholder="Escribe o pega el artículo completo aquí. Selecciona un texto y usa la barra para darle formato."></div>
+        </div>
+        <div class="rte-hint">Selecciona el texto y elige el formato. Al pegar desde otra página se conservan los párrafos pero no los estilos de origen.</div>
 
         <div class="row2">
           <div>
@@ -442,11 +494,155 @@ function handleImgUpload(e) {
   reader.readAsDataURL(file);
 }
 
+/* ============== EDITOR DE TEXTO ENRIQUECIDO ============== */
+var RTE_TAGS = {P:1,BR:1,B:1,STRONG:1,I:1,EM:1,U:1,S:1,STRIKE:1,H3:1,UL:1,OL:1,LI:1,BLOCKQUOTE:1,A:1,SPAN:1};
+var RTE_BLOCKS = {P:1,H3:1,UL:1,OL:1,BLOCKQUOTE:1};
+
+function rteEsc(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function rteTextToHtml(txt) {
+  return String(txt || '').split(/\n\s*\n/).map(function(p){
+    p = p.trim();
+    return p ? '<p>' + rteEsc(p).replace(/\n/g,'<br>') + '</p>' : '';
+  }).join('');
+}
+
+// Deja solo etiquetas y estilos permitidos (negrita, cursiva, colores, etc.)
+function rteClean(node) {
+  var out = '';
+  node.childNodes.forEach(function(ch){
+    if (ch.nodeType === 3) { out += rteEsc(ch.nodeValue); return; }
+    if (ch.nodeType !== 1) return;
+    var tag = ch.tagName;
+    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'IFRAME' || tag === 'OBJECT') return;
+    var inner = rteClean(ch);
+    if (tag === 'DIV') { out += inner.trim() ? '<p>' + inner + '</p>' : ''; return; }
+    if (tag === 'H1' || tag === 'H2' || tag === 'H4') tag = 'H3';
+    if (tag === 'FONT' || !RTE_TAGS[tag]) {
+      // Etiqueta no permitida: conserva color si lo trae, si no solo el contenido
+      var c = ch.getAttribute && ch.getAttribute('color');
+      out += c ? '<span style="color:' + rteEsc(c) + '">' + inner + '</span>' : inner;
+      return;
+    }
+    if (tag === 'BR') { out += '<br>'; return; }
+    if (tag === 'STRONG') tag = 'B';
+    if (tag === 'EM') tag = 'I';
+    if (tag === 'STRIKE') tag = 'S';
+    var t = tag.toLowerCase();
+    if (tag === 'A') {
+      var href = ch.getAttribute('href') || '';
+      if (!/^https?:\/\//i.test(href)) { out += inner; return; }
+      out += '<a href="' + rteEsc(href).replace(/"/g,'&quot;') + '" target="_blank" rel="noopener">' + inner + '</a>';
+      return;
+    }
+    var st = '';
+    if (ch.style) {
+      if (ch.style.color) st += 'color:' + ch.style.color + ';';
+      if (ch.style.backgroundColor && ch.style.backgroundColor !== 'transparent') st += 'background-color:' + ch.style.backgroundColor + ';';
+      if (ch.style.fontWeight === 'bold' || parseInt(ch.style.fontWeight,10) >= 600) st += 'font-weight:700;';
+      if (ch.style.fontStyle === 'italic') st += 'font-style:italic;';
+      var td = ch.style.textDecoration || ch.style.textDecorationLine || '';
+      if (td.indexOf('underline') !== -1) st += 'text-decoration:underline;';
+      else if (td.indexOf('line-through') !== -1) st += 'text-decoration:line-through;';
+    }
+    if (tag === 'SPAN' && !st) { out += inner; return; }
+    if (!inner.replace(/<br>/g,'').trim() && tag !== 'P') { out += inner; return; }
+    out += '<' + t + (st ? ' style="' + st + '"' : '') + '>' + inner + '</' + t + '>';
+  });
+  return out;
+}
+
+function rteGetHtml() {
+  var ed = document.getElementById('fCuerpo');
+  var html = rteClean(ed);
+  // Texto suelto fuera de un párrafo → envolverlo en <p>
+  var tmp = document.createElement('div'); tmp.innerHTML = html;
+  var fixed = '', loose = '';
+  tmp.childNodes.forEach(function(ch){
+    var isBlock = ch.nodeType === 1 && RTE_BLOCKS[ch.tagName];
+    if (isBlock) {
+      if (loose.trim()) fixed += '<p>' + loose + '</p>';
+      loose = ''; fixed += ch.outerHTML;
+    } else {
+      loose += ch.nodeType === 3 ? rteEsc(ch.nodeValue) : ch.outerHTML;
+    }
+  });
+  if (loose.replace(/<br>/g,'').trim()) fixed += '<p>' + loose + '</p>';
+  return fixed.replace(/<p>(\s|<br>)*<\/p>/g, '');
+}
+
+function rteSetHtml(html) {
+  var ed = document.getElementById('fCuerpo');
+  if (!html) { ed.innerHTML = ''; return; }
+  if (!/<(p|br|b|i|u|s|h[1-6]|ul|ol|li|blockquote|a|span|strong|em|div|font)\b/i.test(html)) html = rteTextToHtml(html);
+  var tmp = document.createElement('div'); tmp.innerHTML = html;
+  ed.innerHTML = rteClean(tmp);
+}
+
+function rteInit() {
+  var ed = document.getElementById('fCuerpo');
+  var bar = document.getElementById('rteBar');
+  if (!ed || !bar) return;
+  try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
+
+  // No perder la selección al tocar la barra
+  bar.addEventListener('mousedown', function(e){ if (e.target.closest('button')) e.preventDefault(); });
+
+  bar.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    ed.focus();
+    try { document.execCommand('styleWithCSS', false, true); } catch (er) {}
+    if (b.dataset.cmd) {
+      try { document.execCommand('styleWithCSS', false, false); } catch (er) {}
+      document.execCommand(b.dataset.cmd, false, null);
+    } else if (b.dataset.block) {
+      document.execCommand('formatBlock', false, b.dataset.block);
+    } else if (b.dataset.color) {
+      document.execCommand('foreColor', false, b.dataset.color);
+    } else if (b.dataset.hl) {
+      if (!document.execCommand('hiliteColor', false, b.dataset.hl)) document.execCommand('backColor', false, b.dataset.hl);
+    } else if (b.dataset.link) {
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed) { alert('Primero selecciona el texto al que quieres ponerle el enlace.'); return; }
+      var url = prompt('Pega el enlace (debe empezar con https://):', 'https://');
+      if (url && /^https?:\/\/.+/i.test(url.trim())) document.execCommand('createLink', false, url.trim());
+    } else if (b.dataset.clear) {
+      document.execCommand('removeFormat', false, null);
+      document.execCommand('unlink', false, null);
+      document.execCommand('formatBlock', false, 'p');
+    }
+    rteRefresh();
+  });
+
+  // Pegar: conservar párrafos, sin estilos raros de la página de origen
+  ed.addEventListener('paste', function(e){
+    var txt = (e.clipboardData || window.clipboardData).getData('text/plain');
+    if (txt == null) return;
+    e.preventDefault();
+    document.execCommand('insertHTML', false, rteTextToHtml(txt) || rteEsc(txt));
+  });
+
+  ['keyup','mouseup','focus'].forEach(function(ev){ ed.addEventListener(ev, rteRefresh); });
+  document.addEventListener('selectionchange', function(){ if (document.activeElement === ed) rteRefresh(); });
+}
+
+// Marca los botones activos según dónde está el cursor
+function rteRefresh() {
+  document.querySelectorAll('#rteBar [data-cmd]').forEach(function(b){
+    var on = false; try { on = document.queryCommandState(b.dataset.cmd); } catch (e) {}
+    b.classList.toggle('on', !!on);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', rteInit);
+if (document.readyState !== 'loading') rteInit();
+
 /* ============== PUBLICAR ============== */
 function clearForm() {
   document.getElementById('fTitulo').value = '';
   document.getElementById('fResumen').value = '';
-  document.getElementById('fCuerpo').value = '';
+  document.getElementById('fCuerpo').innerHTML = '';
   document.getElementById('fAutor').value = 'Equipo Rabiozas';
   document.getElementById('fFuente').value = 'Rabiozas';
   document.getElementById('fUrlOriginal').value = '';
@@ -488,11 +684,7 @@ function publishNews() {
   if (!titulo) { showStatus('⚠ El título es obligatorio', 'err'); return; }
   if (!resumen) { showStatus('⚠ El resumen es obligatorio', 'err'); return; }
 
-  const cuerpoRaw = document.getElementById('fCuerpo').value.trim();
-  const cuerpoHtml = cuerpoRaw
-    .split(/\n\s*\n/)
-    .map(function(p) { return p.trim() ? '<p>' + p.trim().replace(/\n/g, '<br>') + '</p>' : ''; })
-    .join('');
+  const cuerpoHtml = rteGetHtml();
 
   const imagenUrl = uploadedImageBase64 || document.getElementById('fImagenUrl').value.trim();
   const audioUrl = uploadedAudioBase64 || document.getElementById('fAudioUrl').value.trim();
@@ -1218,8 +1410,7 @@ function editNews(n) {
   toggleCategoryFields();
   document.getElementById('fTitulo').value = n.Titulo || '';
   document.getElementById('fResumen').value = n.Resumen || '';
-  const cuerpoText = (n.Cuerpo || '').replace(/<\/p>\s*<p>/g, '\n\n').replace(/<\/?p>/g, '').replace(/<br\s*\/?>/g, '\n');
-  document.getElementById('fCuerpo').value = cuerpoText;
+  rteSetHtml(n.Cuerpo || '');
   document.getElementById('fAutor').value = n.Autor || 'Equipo Rabiozas';
   document.getElementById('fFuente').value = n.Fuente || 'Rabiozas';
   document.getElementById('fUrlOriginal').value = n.UrlOriginal || '';
