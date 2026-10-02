@@ -466,19 +466,21 @@ function handleImgUpload(e) {
     const img = new Image();
     img.onload = function() {
       // Redimensionar y comprimir para que el POST no exceda los límites de Apps Script
-      // Google Sheets no acepta más de 50.000 caracteres por celda, así que
-      // la foto se comprime hasta quedar por debajo de ese límite (con margen).
-      const LIMITE = 45000;
+      // Alta resolución: el Apps Script guarda la foto en Google Drive y en el
+      // Sheet queda solo el enlace, así que ya no aplica el límite de 50.000
+      // caracteres por celda. Se deja un tope (~1,8 MB) para que el envío sea ágil.
+      const LIMITE = 2500000;
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      let ancho = Math.min(900, img.width);
+      let ancho = Math.min(1800, img.width);
       let dataUrl = '';
       while (ancho >= 320) {
         const alto = Math.round(img.height * (ancho / img.width));
         canvas.width = ancho; canvas.height = alto;
         ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, ancho, alto);
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, ancho, alto);
-        for (let q = 0.75; q >= 0.45; q -= 0.1) {
+        for (let q = 0.88; q >= 0.6; q -= 0.07) {
           dataUrl = canvas.toDataURL('image/jpeg', q);
           if (dataUrl.length <= LIMITE) break;
         }
@@ -703,7 +705,7 @@ function publishNews() {
   // Aviso claro si algún campo supera el límite de una celda de Google Sheets
   const LIMITE_CELDA = 49000;
   if (cuerpoHtml.length > LIMITE_CELDA) { showStatus('✗ El cuerpo de la noticia es demasiado largo (' + cuerpoHtml.length.toLocaleString('es-CO') + ' caracteres; el máximo es ' + LIMITE_CELDA.toLocaleString('es-CO') + '). Divide la nota o quita formato innecesario.', 'err'); return; }
-  if (imagenUrl.length > LIMITE_CELDA) { showStatus('✗ La foto pesa demasiado. Vuelve a subirla para que el panel la comprima, o pega un enlace a la imagen.', 'err'); return; }
+  if (imagenUrl.length > 3000000) { showStatus('✗ La foto pesa demasiado. Vuelve a subirla para que el panel la comprima, o pega un enlace a la imagen.', 'err'); return; }
   const audioUrl = uploadedAudioBase64 || document.getElementById('fAudioUrl').value.trim();
   const opinionRole = document.getElementById('fOpinionRole').value.trim();
 
